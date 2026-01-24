@@ -125,6 +125,7 @@ spec:
           imagePullPolicy: Always
           args:
             - '--tunnel-port=30776'
+            - --admin-password-file=/tmp/portainer-password
           volumeMounts:
             - name: data
               mountPath: /data

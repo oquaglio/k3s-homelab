@@ -1,0 +1,8 @@
+# Secrets - never commit these!
+**/secret.yaml
+**/*-secret.yaml
+*.env
+
+# Backup files
+*.backup
+*.bak

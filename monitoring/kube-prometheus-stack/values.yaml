@@ -1,0 +1,16 @@
+# Grafana configuration
+grafana:
+  adminPassword: "admin"  # Change this!
+  service:
+    type: NodePort
+    nodePort: 30080  # Access Grafana at localhost:30080
+
+# Prometheus configuration
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090  # Access Prometheus at localhost:30090
+
+# Keep it lightweight for homelab
+alertmanager:
+  enabled: true

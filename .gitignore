@@ -1,8 +1,36 @@
-# Secrets - never commit these!
+# Secrets - NEVER commit these!
+secrets.sh
 **/secret.yaml
 **/*-secret.yaml
 *.env
+.env.*
+
+# Kubeconfig files (contain credentials)
+configs/k3s-remote.yaml
+*.kubeconfig
 
 # Backup files
 *.backup
 *.bak
+*.old
+*~
+
+# Helm generated files (optional - you may want to commit manifests.yaml)
+# Uncomment if you want to regenerate manifests.yaml each time
+# **/manifests.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp

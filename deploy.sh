@@ -24,16 +24,6 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-# Check if secrets have been created
-echo -e "${YELLOW}Checking for required secrets...${NC}"
-if ! kubectl get secret portainer-admin-password -n portainer &> /dev/null; then
-    echo -e "${RED}Error: Portainer admin password secret not found${NC}"
-    echo "Run ./secrets.sh first to create required secrets"
-    exit 1
-fi
-echo -e "${GREEN}✓ Required secrets found${NC}"
-echo ""
-
 echo -e "${YELLOW}Step 1: Deploying nginx...${NC}"
 kubectl apply -f apps/nginx/deployment.yaml
 echo -e "${GREEN}✓ nginx deployed${NC}"
@@ -46,6 +36,21 @@ echo "Waiting for Portainer to be ready..."
 kubectl wait --for=jsonpath='{.status.replicas}'=1 deployment/portainer -n portainer --timeout=60s 2>/dev/null || sleep 10
 # Then wait for pods
 kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s 2>/dev/null || true
+
+# Initialize Portainer admin user via API if not already done
+PORTAINER_URL="http://localhost:30777"
+ADMIN_CHECK=$(curl -s -o /dev/null -w "%{http_code}" "${PORTAINER_URL}/api/users/admin/check")
+if [ "$ADMIN_CHECK" = "404" ]; then
+    echo "Initializing Portainer admin user..."
+    # Get password from environment or use default
+    PORTAINER_PASSWORD="${PORTAINER_PASSWORD:-changeMePlease123}"
+    curl -s -X POST "${PORTAINER_URL}/api/users/admin/init" \
+        -H "Content-Type: application/json" \
+        -d "{\"Username\":\"admin\",\"Password\":\"${PORTAINER_PASSWORD}\"}" > /dev/null
+    echo -e "${GREEN}✓ Portainer admin user created (admin / ${PORTAINER_PASSWORD})${NC}"
+else
+    echo "Portainer admin user already exists"
+fi
 echo -e "${GREEN}✓ Portainer deployed${NC}"
 echo ""
 

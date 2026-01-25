@@ -6,5 +6,11 @@ echo "K3s Homelab - Full Start"
 echo "========================================="
 echo ""
 
-# Run all setup steps in order
-./setup.sh && ./secrets.sh && ./deploy.sh
+# Run setup first
+./setup.sh
+
+# Source secrets.sh so environment variables are available to deploy.sh
+source ./secrets.sh
+
+# Deploy applications (will use PORTAINER_PASSWORD from secrets.sh)
+./deploy.sh

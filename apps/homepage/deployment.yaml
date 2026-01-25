@@ -133,6 +133,15 @@ spec:
         app: homepage
     spec:
       serviceAccountName: homepage
+      initContainers:
+        - name: copy-config
+          image: busybox:latest
+          command: ['sh', '-c', 'cp /config-source/* /config/']
+          volumeMounts:
+            - name: config-source
+              mountPath: /config-source
+            - name: config
+              mountPath: /config
       containers:
         - name: homepage
           image: ghcr.io/gethomepage/homepage:latest
@@ -145,8 +154,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
-            - name: logs
-              mountPath: /app/config/logs
           resources:
             requests:
               memory: "128Mi"
@@ -155,10 +162,10 @@ spec:
               memory: "256Mi"
               cpu: "200m"
       volumes:
-        - name: config
+        - name: config-source
           configMap:
             name: homepage-config
-        - name: logs
+        - name: config
           emptyDir: {}
 ---
 apiVersion: v1

@@ -14,8 +14,12 @@ cd k3s-homelab
 # 2. Make scripts executable
 chmod +x *.sh
 
-# 3. Bootstrap K3s cluster
+# 3. Bootstrap K3s cluster (runs install.sh + setup.sh)
 ./bootstrap.sh
+
+# Or run individually:
+# ./install.sh  # Install K3s, kubectl, Helm (one-time)
+# ./setup.sh    # Verify cluster and create namespaces (can re-run)
 
 # 4. Create your secrets
 cp secrets.sh.example secrets.sh
@@ -80,7 +84,7 @@ http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kube
 sudo /usr/local/bin/k3s-uninstall.sh
 
 # Start fresh
-./bootstrap.sh
+./bootstrap.sh  # Or: ./install.sh && ./setup.sh
 ./secrets.sh
 ./deploy.sh
 ```
@@ -105,9 +109,12 @@ kubectl get nodes
 
 ```
 k3s-homelab/
-├── bootstrap.sh              # Initial K3s setup
+├── bootstrap.sh              # Convenience - runs install + setup
+├── install.sh                # Install K3s, kubectl, Helm
+├── setup.sh                  # Verify and create namespaces
 ├── deploy.sh                 # Deploy all apps
 ├── destroy.sh                # Remove all apps
+├── status.sh                 # Show cluster status
 ├── secrets.sh.example        # Template for secrets
 ├── generate-remote-config.sh # Generate remote kubeconfig
 │
@@ -116,13 +123,15 @@ k3s-homelab/
 │       └── deployment.yaml   # nginx web server
 │
 ├── monitoring/
-│   ├── namespace.yaml        # Monitoring namespace (shared)
 │   ├── portainer/
+│   │   ├── namespace.yaml    # Portainer namespace
 │   │   └── portainer.yaml
 │   ├── kubernetes-dashboard/
+│   │   ├── namespace.yaml    # Dashboard namespace
 │   │   ├── dashboard.yaml
 │   │   └── admin-user.yaml
 │   └── kube-prometheus-stack/
+│       ├── namespace.yaml    # Monitoring namespace
 │       ├── values.yaml       # Helm values
 │       └── manifests.yaml    # Generated from Helm
 │
@@ -140,11 +149,14 @@ k3s-homelab/
 
 | Script | Purpose |
 |--------|---------|
-| `bootstrap.sh` | Install K3s, kubectl, Helm. One-time setup |
+| `bootstrap.sh` | Convenience wrapper - runs install.sh + setup.sh |
+| `install.sh` | Install K3s, kubectl, Helm (one-time) |
+| `setup.sh` | Verify cluster and create namespaces (re-runnable) |
 | `deploy.sh` | Deploy all applications to cluster |
 | `destroy.sh` | Remove all applications (keeps K3s) |
 | `secrets.sh` | Create Kubernetes secrets (from template) |
 | `generate-remote-config.sh` | Create kubeconfig for remote access |
+| `status.sh` | Show cluster status and service URLs |
 
 ## 📚 Learning Resources
 

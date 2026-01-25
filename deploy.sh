@@ -24,11 +24,6 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-echo -e "${YELLOW}Step 0: Creating namespaces...${NC}"
-kubectl apply -f monitoring/namespace.yaml
-echo -e "${GREEN}✓ Namespaces created${NC}"
-echo ""
-
 echo -e "${YELLOW}Step 1: Deploying nginx...${NC}"
 kubectl apply -f apps/nginx/deployment.yaml
 echo -e "${GREEN}✓ nginx deployed${NC}"

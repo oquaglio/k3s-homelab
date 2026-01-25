@@ -51,8 +51,9 @@ echo -e "${GREEN}✓ Secrets deleted${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 6: Deleting namespaces...${NC}"
-kubectl delete -f monitoring/namespace.yaml --ignore-not-found=true
-kubectl delete namespace portainer --ignore-not-found=true
+kubectl delete -f monitoring/kube-prometheus-stack/namespace.yaml --ignore-not-found=true
+kubectl delete -f monitoring/portainer/namespace.yaml --ignore-not-found=true
+kubectl delete -f monitoring/kubernetes-dashboard/namespace.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Namespaces deleted${NC}"
 echo ""
 

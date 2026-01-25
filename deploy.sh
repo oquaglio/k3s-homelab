@@ -24,9 +24,11 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-echo -e "${YELLOW}Step 1: Deploying nginx...${NC}"
-kubectl apply -f apps/nginx/deployment.yaml
-echo -e "${GREEN}✓ nginx deployed${NC}"
+echo -e "${YELLOW}Step 1: Deploying Homepage (Dashboard)...${NC}"
+kubectl apply -f apps/homepage/deployment.yaml
+echo "Waiting for Homepage to be ready..."
+kubectl wait --for=condition=ready pod -l app=homepage --timeout=120s 2>/dev/null || true
+echo -e "${GREEN}✓ Homepage deployed${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 2: Deploying Portainer...${NC}"
@@ -37,19 +39,28 @@ kubectl wait --for=jsonpath='{.status.replicas}'=1 deployment/portainer -n porta
 # Then wait for pods
 kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s 2>/dev/null || true
 
-# Initialize Portainer admin user via API if not already done
+# Wait for Portainer API to be ready and initialize admin user
 PORTAINER_URL="http://localhost:30777"
-ADMIN_CHECK=$(curl -s -o /dev/null -w "%{http_code}" "${PORTAINER_URL}/api/users/admin/check")
+echo "Waiting for Portainer API to be ready..."
+for i in {1..30}; do
+    ADMIN_CHECK=$(curl -s -o /dev/null -w "%{http_code}" "${PORTAINER_URL}/api/users/admin/check" 2>/dev/null || echo "000")
+    if [ "$ADMIN_CHECK" != "000" ]; then
+        break
+    fi
+    sleep 2
+done
+
 if [ "$ADMIN_CHECK" = "404" ]; then
     echo "Initializing Portainer admin user..."
-    # Get password from environment or use default
     PORTAINER_PASSWORD="${PORTAINER_PASSWORD:-changeMePlease123}"
     curl -s -X POST "${PORTAINER_URL}/api/users/admin/init" \
         -H "Content-Type: application/json" \
-        -d "{\"Username\":\"admin\",\"Password\":\"${PORTAINER_PASSWORD}\"}" > /dev/null
+        -d "{\"Username\":\"admin\",\"Password\":\"${PORTAINER_PASSWORD}\"}" > /dev/null 2>&1 || true
     echo -e "${GREEN}✓ Portainer admin user created (admin / ${PORTAINER_PASSWORD})${NC}"
-else
+elif [ "$ADMIN_CHECK" = "204" ]; then
     echo "Portainer admin user already exists"
+else
+    echo "Warning: Could not reach Portainer API (status: ${ADMIN_CHECK})"
 fi
 echo -e "${GREEN}✓ Portainer deployed${NC}"
 echo ""
@@ -82,16 +93,16 @@ echo "  kubectl get pods --all-namespaces"
 echo ""
 echo "Access your services:"
 echo ""
-echo "Getting service ports..."
-NGINX_PORT=$(kubectl get svc nginx -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "N/A")
-PORTAINER_PORT=$(kubectl get svc portainer -n portainer -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "N/A")
-GRAFANA_PORT=$(kubectl get svc kube-prometheus-stack-grafana -n monitoring -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "N/A")
-PROMETHEUS_PORT=$(kubectl get svc kube-prometheus-stack-prometheus -n monitoring -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "N/A")
-
-echo "  • nginx:       http://localhost:${NGINX_PORT}"
-echo "  • Portainer:   http://localhost:${PORTAINER_PORT}"
-echo "  • Grafana:     http://localhost:${GRAFANA_PORT} (admin/admin)"
-echo "  • Prometheus:  http://localhost:${PROMETHEUS_PORT}"
+echo ""
+echo -e "${GREEN}Homepage Dashboard: http://localhost:30000${NC}"
+echo ""
+echo "All services are accessible from the Homepage dashboard!"
+echo ""
+echo "Direct service URLs:"
+echo "  • Homepage:    http://localhost:30000 (start here!)"
+echo "  • Portainer:   http://localhost:30777"
+echo "  • Grafana:     http://localhost:30080"
+echo "  • Prometheus:  http://localhost:30090"
 echo ""
 echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"

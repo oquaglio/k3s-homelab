@@ -39,9 +39,9 @@ kubectl delete namespace portainer --ignore-not-found=true
 echo -e "${GREEN}✓ Portainer deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Deleting nginx...${NC}"
-kubectl delete -f apps/nginx/deployment.yaml --ignore-not-found=true
-echo -e "${GREEN}✓ nginx deleted${NC}"
+echo -e "${YELLOW}Step 4: Deleting Homepage...${NC}"
+kubectl delete -f apps/homepage/deployment.yaml --ignore-not-found=true
+echo -e "${GREEN}✓ Homepage deleted${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 5: Cleaning up secrets...${NC}"

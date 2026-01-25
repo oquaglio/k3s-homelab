@@ -17,20 +17,26 @@ chmod +x *.sh
 # 3. Bootstrap K3s cluster (runs install.sh + setup.sh)
 ./bootstrap.sh
 
-# Or run individually:
-# ./install.sh  # Install K3s, kubectl, Helm (one-time)
-# ./setup.sh    # Verify cluster and create namespaces (can re-run)
-
 # 4. Create your secrets
 cp secrets.sh.example secrets.sh
 vi secrets.sh  # Edit passwords
-./secrets.sh
 
-# 5. Deploy all applications
-./deploy.sh
+# 5. Deploy everything (setup + secrets + apps)
+./start.sh
 ```
 
 That's it! Your homelab is running.
+
+### Alternative: Run Steps Individually
+
+```bash
+./install.sh   # Install K3s, kubectl, Helm (one-time)
+./setup.sh     # Verify cluster and create namespaces
+./secrets.sh   # Create secrets (MUST run before deploy)
+./deploy.sh    # Deploy all applications
+```
+
+**Important:** `secrets.sh` must run before `deploy.sh` - the deploy script checks for required secrets.
 
 ## 📦 What's Included
 
@@ -72,7 +78,7 @@ http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kube
 ### Redeploy Everything
 ```bash
 ./destroy.sh  # Remove all apps
-./deploy.sh   # Deploy fresh
+./start.sh    # Setup + secrets + deploy fresh
 ```
 
 ### Complete Reset (Nuclear Option)
@@ -84,9 +90,8 @@ http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kube
 sudo /usr/local/bin/k3s-uninstall.sh
 
 # Start fresh
-./bootstrap.sh  # Or: ./install.sh && ./setup.sh
-./secrets.sh
-./deploy.sh
+./bootstrap.sh
+./start.sh
 ```
 
 ## 🌐 Remote Access
@@ -109,13 +114,14 @@ kubectl get nodes
 
 ```
 k3s-homelab/
-├── bootstrap.sh              # Convenience - runs install + setup
+├── bootstrap.sh              # Install K3s + tools (one-time)
+├── start.sh                  # Full start: setup + secrets + deploy
 ├── install.sh                # Install K3s, kubectl, Helm
-├── setup.sh                  # Verify and create namespaces
-├── deploy.sh                 # Deploy all apps
+├── setup.sh                  # Verify cluster and create namespaces
+├── secrets.sh.example        # Template for secrets
+├── deploy.sh                 # Deploy all apps (requires secrets first)
 ├── destroy.sh                # Remove all apps
 ├── status.sh                 # Show cluster status
-├── secrets.sh.example        # Template for secrets
 ├── generate-remote-config.sh # Generate remote kubeconfig
 │
 ├── apps/
@@ -149,14 +155,15 @@ k3s-homelab/
 
 | Script | Purpose |
 |--------|---------|
-| `bootstrap.sh` | Convenience wrapper - runs install.sh + setup.sh |
-| `install.sh` | Install K3s, kubectl, Helm (one-time) |
-| `setup.sh` | Verify cluster and create namespaces (re-runnable) |
-| `deploy.sh` | Deploy all applications to cluster |
+| `bootstrap.sh` | Install K3s, kubectl, Helm (one-time setup) |
+| `start.sh` | Full start: runs setup.sh + secrets.sh + deploy.sh |
+| `install.sh` | Install K3s, kubectl, Helm |
+| `setup.sh` | Verify cluster and create namespaces |
+| `secrets.sh` | Create Kubernetes secrets (must run before deploy) |
+| `deploy.sh` | Deploy all applications (requires secrets first) |
 | `destroy.sh` | Remove all applications (keeps K3s) |
-| `secrets.sh` | Create Kubernetes secrets (from template) |
-| `generate-remote-config.sh` | Create kubeconfig for remote access |
 | `status.sh` | Show cluster status and service URLs |
+| `generate-remote-config.sh` | Create kubeconfig for remote access |
 
 ## 📚 Learning Resources
 

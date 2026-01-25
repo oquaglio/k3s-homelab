@@ -119,16 +119,22 @@ spec:
         - name: "data"
           persistentVolumeClaim:
             claimName: portainer
+        - name: admin-password
+          secret:
+            secretName: portainer-admin-password
       containers:
         - name: portainer
           image: "portainer/portainer-ce:2.33.6"
           imagePullPolicy: Always
           args:
             - '--tunnel-port=30776'
-            - --admin-password-file=/tmp/portainer-password
+            - '--admin-password-file=/tmp/portainer-password/password'
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: admin-password
+              mountPath: /tmp/portainer-password
+              readOnly: true
           ports:
             - name: http
               containerPort: 9000

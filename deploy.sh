@@ -24,6 +24,16 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
+# Check if secrets have been created
+echo -e "${YELLOW}Checking for required secrets...${NC}"
+if ! kubectl get secret portainer-admin-password -n portainer &> /dev/null; then
+    echo -e "${RED}Error: Portainer admin password secret not found${NC}"
+    echo "Run ./secrets.sh first to create required secrets"
+    exit 1
+fi
+echo -e "${GREEN}✓ Required secrets found${NC}"
+echo ""
+
 echo -e "${YELLOW}Step 1: Deploying nginx...${NC}"
 kubectl apply -f apps/nginx/deployment.yaml
 echo -e "${GREEN}✓ nginx deployed${NC}"
@@ -82,6 +92,3 @@ echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"
 echo "  2. Visit: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
 echo "  3. Get token: kubectl -n kubernetes-dashboard create token admin-user"
-echo ""
-echo "Note: If you haven't set up secrets yet, some services may not work properly."
-echo "Run ./secrets.sh to create necessary secrets."

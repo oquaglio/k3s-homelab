@@ -87,6 +87,20 @@ kubectl wait --for=condition=available deployment/kube-prometheus-stack-grafana 
 echo -e "${GREEN}✓ Kube Prometheus Stack deployed${NC}"
 echo ""
 
+echo -e "${YELLOW}Step 5: Deploying Uptime Kuma...${NC}"
+kubectl apply -f monitoring/uptime-kuma/uptime-kuma.yaml
+echo "Waiting for Uptime Kuma to be ready..."
+kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeout=120s 2>/dev/null || true
+echo -e "${GREEN}✓ Uptime Kuma deployed${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 6: Deploying n8n (Workflow Automation)...${NC}"
+kubectl apply -f apps/n8n/n8n.yaml
+echo "Waiting for n8n to be ready..."
+kubectl wait --for=condition=ready pod -l app=n8n -n n8n --timeout=120s 2>/dev/null || true
+echo -e "${GREEN}✓ n8n deployed${NC}"
+echo ""
+
 echo -e "${GREEN}=========================================${NC}"
 echo -e "${GREEN}Deployment complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
@@ -106,6 +120,8 @@ echo "  • Homepage:    http://localhost:30000 (start here!)"
 echo "  • Portainer:   http://localhost:30777"
 echo "  • Grafana:     http://localhost:30080"
 echo "  • Prometheus:  http://localhost:30090"
+echo "  • Uptime Kuma: http://localhost:30333"
+echo "  • n8n:         http://localhost:30555"
 echo ""
 echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"

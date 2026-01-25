@@ -65,6 +65,18 @@ data:
             href: http://localhost:30777
             description: Container Management
             ping: http://localhost:30777
+        - Uptime Kuma:
+            icon: uptime-kuma.png
+            href: http://localhost:30333
+            description: Uptime Monitoring
+            ping: http://localhost:30333
+
+    - Automation:
+        - n8n:
+            icon: n8n.png
+            href: http://localhost:30555
+            description: Workflow Automation
+            ping: http://localhost:30555
 
     - Cluster:
         - Kubernetes Dashboard:
@@ -106,7 +118,10 @@ data:
     layout:
       Monitoring:
         style: row
-        columns: 3
+        columns: 4
+      Automation:
+        style: row
+        columns: 1
       Cluster:
         style: row
         columns: 1

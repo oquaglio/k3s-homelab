@@ -1,0 +1,47 @@
+# n8n Helm Chart - Default Values
+# Override these when installing: helm install n8n ./charts/n8n --set nodePort=31000
+
+# Container image settings
+image:
+  repository: n8nio/n8n
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas (n8n typically runs as single instance)
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 5678
+  nodePort: 30555
+
+# Persistent storage
+persistence:
+  enabled: true
+  size: 2Gi
+  accessMode: ReadWriteOnce
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# n8n environment configuration
+config:
+  host: "localhost"
+  protocol: "http"
+  timezone: "UTC"
+  # Webhook URL - update this if using ingress
+  webhookUrl: "http://localhost:30555/"
+
+# Health checks
+healthcheck:
+  enabled: true
+  path: /healthz
+  initialDelaySeconds: 30
+  periodSeconds: 10

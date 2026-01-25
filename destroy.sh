@@ -22,8 +22,8 @@ echo ""
 echo -e "${YELLOW}Destroying applications...${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 1: Deleting n8n...${NC}"
-kubectl delete -f apps/n8n/n8n.yaml --ignore-not-found=true
+echo -e "${YELLOW}Step 1: Deleting n8n (Helm)...${NC}"
+helm uninstall n8n --namespace n8n 2>/dev/null || true
 echo -e "${GREEN}✓ n8n deleted${NC}"
 echo ""
 

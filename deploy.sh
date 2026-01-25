@@ -94,11 +94,9 @@ kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeou
 echo -e "${GREEN}✓ Uptime Kuma deployed${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deploying n8n (Workflow Automation)...${NC}"
-kubectl apply -f apps/n8n/n8n.yaml
-echo "Waiting for n8n to be ready..."
-kubectl wait --for=condition=ready pod -l app=n8n -n n8n --timeout=120s 2>/dev/null || true
-echo -e "${GREEN}✓ n8n deployed${NC}"
+echo -e "${YELLOW}Step 6: Deploying n8n (Workflow Automation) via Helm...${NC}"
+helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s 2>/dev/null || true
+echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 echo ""
 
 echo -e "${GREEN}=========================================${NC}"

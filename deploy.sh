@@ -41,19 +41,22 @@ kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=1
 
 # Wait for Portainer API to be ready and initialize admin user
 PORTAINER_URL="http://localhost:30777"
-echo "Waiting for Portainer API to be ready..."
-for i in {1..30}; do
-    ADMIN_CHECK=$(curl -s -o /dev/null -w "%{http_code}" "${PORTAINER_URL}/api/users/admin/check" 2>/dev/null || echo "000")
+echo -n "Waiting for Portainer API to be ready"
+ADMIN_CHECK="000"
+for i in {1..45}; do
+    ADMIN_CHECK=$(curl -s --connect-timeout 2 --max-time 5 -o /dev/null -w "%{http_code}" "${PORTAINER_URL}/api/users/admin/check" 2>/dev/null) || ADMIN_CHECK="000"
     if [ "$ADMIN_CHECK" != "000" ]; then
         break
     fi
+    echo -n "."
     sleep 2
 done
+echo ""
 
 if [ "$ADMIN_CHECK" = "404" ]; then
     echo "Initializing Portainer admin user..."
     PORTAINER_PASSWORD="${PORTAINER_PASSWORD:-changeMePlease123}"
-    curl -s -X POST "${PORTAINER_URL}/api/users/admin/init" \
+    curl -s --connect-timeout 5 --max-time 10 -X POST "${PORTAINER_URL}/api/users/admin/init" \
         -H "Content-Type: application/json" \
         -d "{\"Username\":\"admin\",\"Password\":\"${PORTAINER_PASSWORD}\"}" > /dev/null 2>&1 || true
     echo -e "${GREEN}✓ Portainer admin user created (admin / ${PORTAINER_PASSWORD})${NC}"

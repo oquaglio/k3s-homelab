@@ -32,7 +32,10 @@ echo ""
 echo -e "${YELLOW}Step 2: Deploying Portainer...${NC}"
 kubectl apply -f monitoring/portainer/portainer.yaml
 echo "Waiting for Portainer to be ready..."
-kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s || true
+# Wait for deployment to exist first
+kubectl wait --for=jsonpath='{.status.replicas}'=1 deployment/portainer -n portainer --timeout=60s 2>/dev/null || sleep 10
+# Then wait for pods
+kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s 2>/dev/null || true
 echo -e "${GREEN}✓ Portainer deployed${NC}"
 echo ""
 
@@ -48,7 +51,10 @@ echo -e "${YELLOW}Step 4: Deploying Kube Prometheus Stack (Grafana + Prometheus)
 echo "This may take a few minutes..."
 kubectl apply -f monitoring/kube-prometheus-stack/manifests.yaml
 echo "Waiting for Grafana to be ready..."
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana -n monitoring --timeout=300s || true
+# Delete the test pod if it exists (it's not needed)
+kubectl delete pod kube-prometheus-stack-grafana-test -n monitoring 2>/dev/null || true
+# Wait for the deployment
+kubectl wait --for=condition=available deployment/kube-prometheus-stack-grafana -n monitoring --timeout=300s || true
 echo -e "${GREEN}✓ Kube Prometheus Stack deployed${NC}"
 echo ""
 

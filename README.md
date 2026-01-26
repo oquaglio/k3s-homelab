@@ -1,6 +1,6 @@
-# K3s Homelab
+# K3s Homelab with GitOps
 
-Complete K3s homelab setup with monitoring, dashboards, and GitOps workflows.
+Complete K3s homelab setup with ArgoCD, monitoring, automation, and comprehensive testing workflows.
 
 ## 🚀 Quick Start
 
@@ -8,250 +8,331 @@ Complete K3s homelab setup with monitoring, dashboards, and GitOps workflows.
 
 ```bash
 # 1. Clone this repo
-git clone <your-repo-url>
+git clone https://github.com/oquaglio/k3s-homelab.git
 cd k3s-homelab
 
-# 2. Make scripts executable
-chmod +x *.sh
-
-# 3. Bootstrap K3s cluster (runs install.sh + setup.sh)
+# 2. Bootstrap K3s cluster
 ./bootstrap.sh
 
-# 4. Create your secrets
-cp secrets.sh.example secrets.sh
-vi secrets.sh  # Edit passwords
-
-# 5. Deploy everything (setup + secrets + apps)
-./start.sh
+# 3. Deploy ArgoCD and all applications from git
+./bootstrap-argocd.sh
 ```
 
-That's it! Your homelab is running.
+**That's it!** ArgoCD deploys everything from git automatically.
 
-### Alternative: Run Steps Individually
+### Complete Rebuild (destroy and recreate)
 
 ```bash
-./install.sh   # Install K3s, kubectl, Helm (one-time)
-./setup.sh     # Verify cluster and create namespaces
-./secrets.sh   # Create secrets (MUST run before deploy)
-./deploy.sh    # Deploy all applications
+./rebuild-cluster.sh
 ```
 
-**Important:** `secrets.sh` must run before `deploy.sh` - the deploy script checks for required secrets.
+This destroys and rebuilds your entire cluster from git in ~5 minutes.
+
+---
 
 ## 📦 What's Included
 
-- **nginx** - Simple web server (demo app)
-- **Portainer** - K8s management UI
-- **Kubernetes Dashboard** - Official K8s UI
-- **Grafana** - Metrics visualization (port 30080)
-- **Prometheus** - Metrics collection (port 30090)
-- **Traefik** - Ingress controller (pre-installed with K3s)
+### Monitoring
+- **Grafana** - Metrics visualization (http://localhost:30080)
+- **Prometheus** - Metrics collection (http://localhost:30090)
+- **Uptime Kuma** - Uptime monitoring (http://localhost:30333)
+- **Portainer** - Container management (http://localhost:30777)
 
-## 🎯 Common Tasks
+### Automation
+- **n8n** - Workflow automation (http://localhost:30555)
 
-### Check Status
+### Development
+- **Code-Server** - VS Code in browser (http://localhost:30888)
+
+### Fun
+- **C64 Emulator** - Commodore 64 BASIC (http://localhost:30064)
+
+### Cluster Management
+- **ArgoCD** - GitOps continuous delivery (http://localhost:30888)
+- **Kubernetes Dashboard** - Official K8s UI (requires kubectl proxy)
+- **Homepage** - Unified dashboard (http://localhost:30000)
+
+---
+
+## 🎯 How GitOps Works
+
+**Before (Manual):**
 ```bash
+vim apps/homepage/deployment.yaml
+./deploy.sh  # Manual deployment
+```
+
+**After (GitOps):**
+```bash
+vim apps/homepage/deployment.yaml
+git commit -am "Update homepage"
+git push
+# ArgoCD auto-deploys within 3 minutes
+```
+
+**Benefits:**
+- ✅ Git is source of truth
+- ✅ Self-healing (reverts manual changes)
+- ✅ Audit trail (git history)
+- ✅ Easy rollback (`git revert`)
+- ✅ Disaster recovery (rebuild from git)
+
+---
+
+## 🧪 Testing Workflows
+
+Three ways to test changes:
+
+### 1. Quick Local Testing
+```bash
+./test-locally.sh deploy n8n       # Deploy to test namespace
+./test-locally.sh diff n8n         # Preview changes
+./test-locally.sh cleanup          # Remove test resources
+```
+
+### 2. Staging Environment
+```bash
+kubectl apply -f argocd/staging-app-of-apps.yaml
+# Apps deploy to staging namespace with different ports
+```
+
+### 3. Preview Only
+```bash
+./test-locally.sh diff <app>
+kubectl diff -f <file>.yaml
+```
+
+See [TESTING.md](TESTING.md) for complete workflows.
+
+---
+
+## 📋 Common Tasks
+
+### Deploy Changes
+```bash
+# Edit configuration
+vim charts/n8n/values.yaml
+
+# Test locally (optional)
+./test-locally.sh deploy n8n
+
+# Commit and push
+git commit -am "Update n8n config"
+git push
+
+# ArgoCD deploys automatically within 3 minutes
+```
+
+### Check Deployment Status
+```bash
+# ArgoCD applications
+kubectl get applications -n argocd
+
+# All pods
 kubectl get pods --all-namespaces
-kubectl get svc --all-namespaces
+
+# ArgoCD UI
+open http://localhost:30888
+# Username: admin
+# Password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-### Access Services
-
-**Web UIs:**
-- Grafana: http://localhost:30080 (admin/admin)
-- Portainer: http://localhost:30777
-- Prometheus: http://localhost:30090
-- nginx: Check port with `kubectl get svc nginx`
-
-**Kubernetes Dashboard:**
+### Destroy Everything
 ```bash
-# 1. Start proxy
-kubectl proxy
-
-# 2. Get access token
-kubectl -n kubernetes-dashboard create token admin-user
-
-# 3. Visit (in browser)
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+./destroy.sh  # ArgoCD-aware cleanup
 ```
 
-### Redeploy Everything
+### Complete Rebuild
 ```bash
-./destroy.sh  # Remove all apps
-./start.sh    # Setup + secrets + deploy fresh
+./rebuild-cluster.sh  # Destroy and recreate from git
 ```
 
-### Complete Reset (Nuclear Option)
+---
+
+## 🔄 Migrating to New Server
+
 ```bash
-# Remove all apps
-./destroy.sh
-
-# Uninstall K3s
-sudo /usr/local/bin/k3s-uninstall.sh
-
-# Start fresh
+# On new server
+git clone https://github.com/oquaglio/k3s-homelab.git
+cd k3s-homelab
 ./bootstrap.sh
-./start.sh
+./bootstrap-argocd.sh
 ```
 
-## 🌐 Remote Access
+That's it! See [MIGRATION.md](MIGRATION.md) for details.
 
-To manage the cluster from your laptop:
+---
 
-```bash
-# On Fedora server
-./generate-remote-config.sh
+## 📚 Documentation
 
-# On your laptop
-scp otto@<server-ip>:~/k3s-homelab/configs/k3s-remote.yaml ~/.kube/config-homelab
+- **[TESTING.md](TESTING.md)** - Testing workflows and best practices
+- **[MIGRATION.md](MIGRATION.md)** - Server migration and disaster recovery
+- **[argocd/README.md](argocd/README.md)** - ArgoCD setup and management
+- **[argocd/STAGING.md](argocd/STAGING.md)** - Staging environment guide
 
-# Use it
-export KUBECONFIG=~/.kube/config-homelab
-kubectl get nodes
-```
-
-## 📁 Repository Structure
-
-```
-k3s-homelab/
-├── bootstrap.sh              # Install K3s + tools (one-time)
-├── start.sh                  # Full start: setup + secrets + deploy
-├── install.sh                # Install K3s, kubectl, Helm
-├── setup.sh                  # Verify cluster and create namespaces
-├── secrets.sh.example        # Template for secrets
-├── deploy.sh                 # Deploy all apps (requires secrets first)
-├── destroy.sh                # Remove all apps
-├── status.sh                 # Show cluster status
-├── generate-remote-config.sh # Generate remote kubeconfig
-│
-├── apps/
-│   └── nginx/
-│       └── deployment.yaml   # nginx web server
-│
-├── monitoring/
-│   ├── portainer/
-│   │   ├── namespace.yaml    # Portainer namespace
-│   │   └── portainer.yaml
-│   ├── kubernetes-dashboard/
-│   │   ├── namespace.yaml    # Dashboard namespace
-│   │   ├── dashboard.yaml
-│   │   └── admin-user.yaml
-│   └── kube-prometheus-stack/
-│       ├── namespace.yaml    # Monitoring namespace
-│       ├── values.yaml       # Helm values
-│       └── manifests.yaml    # Generated from Helm
-│
-└── configs/
-    └── k3s-remote.yaml       # Generated by script
-```
-
-## 🔐 Security Notes
-
-- **secrets.sh** is gitignored - contains passwords
-- **configs/k3s-remote.yaml** contains cluster credentials - don't commit
-- Change default passwords in `secrets.sh` before deploying
+---
 
 ## 🛠️ Scripts Reference
 
 | Script | Purpose |
 |--------|---------|
-| `bootstrap.sh` | Install K3s, kubectl, Helm (one-time setup) |
-| `start.sh` | Full start: runs setup.sh + secrets.sh + deploy.sh |
-| `install.sh` | Install K3s, kubectl, Helm |
-| `setup.sh` | Verify cluster and create namespaces |
-| `secrets.sh` | Create Kubernetes secrets (must run before deploy) |
-| `deploy.sh` | Deploy all applications (requires secrets first) |
-| `destroy.sh` | Remove all applications (keeps K3s) |
-| `status.sh` | Show cluster status and service URLs |
-| `generate-remote-config.sh` | Create kubeconfig for remote access |
-
-## 📚 Learning Resources
-
-**Understanding K8s Concepts:**
-- Pods: Your containers
-- Deployments: "Keep X copies of this pod running"
-- Services: How to access pods (ports, load balancing)
-- Namespaces: Logical grouping (monitoring, default, etc.)
-- Ingress: Fancy URLs instead of ports
-
-**Useful Commands:**
-```bash
-# View everything
-kubectl get all --all-namespaces
-
-# Describe a pod
-kubectl describe pod <pod-name> -n <namespace>
-
-# View logs
-kubectl logs <pod-name> -n <namespace>
-
-# Shell into a pod
-kubectl exec -it <pod-name> -n <namespace> -- /bin/bash
-
-# Port forward a service
-kubectl port-forward svc/<service-name> 8080:80 -n <namespace>
-```
-
-## 🚧 Roadmap
-
-Future improvements to add:
-- [ ] Ingress rules for nice URLs (grafana.homelab.local)
-- [ ] Persistent storage setup
-- [ ] ArgoCD for GitOps automation
-- [ ] Additional apps (wikis, dashboards, etc.)
-- [ ] Multi-node setup (add Raspberry Pis)
-- [ ] Backup/restore scripts
-
-## 🐛 Troubleshooting
-
-**K3s won't start:**
-```bash
-sudo systemctl status k3s
-sudo journalctl -u k3s -f
-```
-
-**Can't connect with kubectl:**
-```bash
-export KUBECONFIG=~/.kube/config
-kubectl cluster-info
-```
-
-**Pods stuck in Pending:**
-```bash
-kubectl describe pod <pod-name> -n <namespace>
-# Check for resource issues or image pull errors
-```
-
-**Services can't be reached:**
-```bash
-# Check if service exists
-kubectl get svc -n <namespace>
-
-# Check if pods are running
-kubectl get pods -n <namespace>
-
-# Check service endpoints
-kubectl get endpoints -n <namespace>
-```
-
-## 📝 Notes
-
-- K3s runs as a systemd service - starts on boot automatically
-- All configs are in git for reproducibility
-- Uses declarative YAML - no imperative commands
-- Follows GitOps best practices
-
-## 🎓 What You've Learned
-
-By using this homelab, you're learning:
-- Kubernetes fundamentals (pods, services, deployments)
-- GitOps workflows (infrastructure as code)
-- Monitoring with Prometheus + Grafana
-- Container orchestration
-- Declarative configuration management
-- Secrets management
-- Multi-namespace organization
+| `bootstrap.sh` | Install K3s and configure cluster |
+| `bootstrap-argocd.sh` | Install ArgoCD and deploy all apps from git |
+| `rebuild-cluster.sh` | Destroy and recreate entire cluster |
+| `deploy.sh` | Manual deployment (legacy, use ArgoCD instead) |
+| `destroy.sh` | Delete all applications (ArgoCD-aware) |
+| `test-locally.sh` | Test changes in isolated namespace |
 
 ---
 
-Built with ❤️ and a lot of `kubectl apply`
+## 📁 Repository Structure
+
+```
+.
+├── apps/                      # Application manifests
+│   └── homepage/              # Homepage dashboard
+├── charts/                    # Helm charts
+│   ├── n8n/                   # n8n workflow automation
+│   ├── code-server/           # VS Code in browser
+│   └── c64-emulator/          # Commodore 64 emulator
+├── monitoring/                # Monitoring stack
+│   ├── kube-prometheus-stack/ # Grafana + Prometheus
+│   ├── uptime-kuma/           # Uptime monitoring
+│   ├── portainer/             # Container management
+│   └── kubernetes-dashboard/  # K8s dashboard
+├── argocd/                    # ArgoCD configuration
+│   ├── applications/          # Application manifests
+│   ├── staging/               # Staging environment
+│   ├── app-of-apps.yaml       # Production app-of-apps
+│   └── staging-app-of-apps.yaml # Staging app-of-apps
+├── bootstrap.sh               # K3s installation
+├── bootstrap-argocd.sh        # ArgoCD installation
+├── rebuild-cluster.sh         # Complete rebuild
+├── deploy.sh                  # Manual deployment (legacy)
+├── destroy.sh                 # Cleanup script
+├── test-locally.sh            # Local testing
+└── README.md                  # This file
+```
+
+---
+
+## 🔧 Requirements
+
+- **OS:** Linux (tested on Fedora/RHEL/Ubuntu)
+- **CPU:** 2+ cores
+- **RAM:** 4GB+ (8GB recommended)
+- **Disk:** 20GB+
+- **Network:** Internet connection for pulling images
+
+---
+
+## 🌟 Features
+
+✅ **GitOps with ArgoCD**
+- Continuous deployment from git
+- Self-healing applications
+- Automatic sync within 3 minutes
+
+✅ **Comprehensive Testing**
+- Local testing in isolated namespaces
+- Staging environment for validation
+- Preview changes before deploying
+
+✅ **Complete Monitoring Stack**
+- Grafana dashboards
+- Prometheus metrics
+- Uptime monitoring
+- Container management
+
+✅ **Developer Tools**
+- VS Code in browser
+- Workflow automation
+- Git-based deployments
+
+✅ **Disaster Recovery**
+- Rebuild entire cluster in 5 minutes
+- Migrate to new server easily
+- Everything defined in git
+
+---
+
+## 🚨 Important Notes
+
+**PersistentVolumes:**
+- Data stored in PVs is lost on rebuild
+- Backup important data before rebuilding
+- See [MIGRATION.md](MIGRATION.md) for backup strategies
+
+**ArgoCD Management:**
+- All changes should go through git
+- Manual changes will be reverted by ArgoCD
+- Use `test-locally.sh` for testing outside GitOps
+
+**Port Allocation:**
+- Production: 30000-30999
+- Staging: 31000-31999
+- Testing: 32000-32767
+
+---
+
+## 🤝 Contributing
+
+This is a personal homelab project, but feel free to:
+- Fork for your own use
+- Submit issues for bugs
+- Share improvements via PRs
+
+---
+
+## 📝 License
+
+MIT License - see LICENSE file for details
+
+---
+
+## 🙏 Acknowledgments
+
+Built with:
+- [K3s](https://k3s.io/) - Lightweight Kubernetes
+- [ArgoCD](https://argoproj.github.io/cd/) - GitOps continuous delivery
+- [Helm](https://helm.sh/) - Kubernetes package manager
+- [Prometheus](https://prometheus.io/) - Monitoring and alerting
+- [Grafana](https://grafana.com/) - Metrics visualization
+- [n8n](https://n8n.io/) - Workflow automation
+- [Code-Server](https://github.com/coder/code-server) - VS Code in browser
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma) - Uptime monitoring
+- [Portainer](https://www.portainer.io/) - Container management
+- [Homepage](https://gethomepage.dev/) - Application dashboard
+
+---
+
+## 🏁 Quick Start Cheatsheet
+
+```bash
+# First time setup
+git clone https://github.com/oquaglio/k3s-homelab.git
+cd k3s-homelab
+./bootstrap.sh && ./bootstrap-argocd.sh
+
+# Make a change
+vim charts/n8n/values.yaml
+git commit -am "Update n8n" && git push
+
+# Test locally first
+./test-locally.sh deploy n8n
+./test-locally.sh cleanup
+
+# Check status
+kubectl get applications -n argocd
+kubectl get pods --all-namespaces
+
+# Rebuild everything
+./rebuild-cluster.sh
+
+# Migrate to new server
+git clone && ./bootstrap.sh && ./bootstrap-argocd.sh
+```
+
+**Access services:** http://localhost:30000 (Homepage has links to everything)
+
+**ArgoCD UI:** http://localhost:30888 (admin / `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`)

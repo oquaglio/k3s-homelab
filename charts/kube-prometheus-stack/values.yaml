@@ -1,0 +1,48 @@
+# Kube Prometheus Stack Configuration
+# This uses the official prometheus-community Helm chart
+
+kube-prometheus-stack:
+  # Grafana configuration
+  grafana:
+    enabled: true
+    adminPassword: "admin"
+    service:
+      type: NodePort
+      nodePort: 30080
+    persistence:
+      enabled: true
+      size: 1Gi
+
+  # Prometheus configuration
+  prometheus:
+    enabled: true
+    service:
+      type: NodePort
+      nodePort: 30090
+    prometheusSpec:
+      retention: 7d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+
+  # Alertmanager configuration
+  alertmanager:
+    enabled: true
+    service:
+      type: ClusterIP
+
+  # Node exporter for node metrics
+  nodeExporter:
+    enabled: true
+
+  # Kube state metrics
+  kubeStateMetrics:
+    enabled: true
+
+  # Prometheus operator
+  prometheusOperator:
+    enabled: true

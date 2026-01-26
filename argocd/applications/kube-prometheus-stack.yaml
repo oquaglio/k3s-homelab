@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/oquaglio/k3s-homelab.git
     targetRevision: HEAD
-    path: monitoring/kube-prometheus-stack
+    path: charts/kube-prometheus-stack
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -21,6 +21,7 @@ spec:
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
     retry:
       limit: 5
       backoff:

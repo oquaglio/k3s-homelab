@@ -1,0 +1,32 @@
+# Code-Server - VS Code in the browser
+
+image:
+  repository: linuxserver/code-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Password for accessing code-server (change this!)
+password: "homelab123"
+
+service:
+  type: NodePort
+  port: 8443
+  nodePort: 30443
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: ""
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+
+# User/Group IDs (linuxserver image specific)
+puid: 1000
+pgid: 1000
+tz: "UTC"

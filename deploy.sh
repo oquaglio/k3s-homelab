@@ -104,6 +104,11 @@ helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --ti
 echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 echo ""
 
+echo -e "${YELLOW}Step 8: Deploying Code-Server (VS Code in browser)...${NC}"
+helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s 2>/dev/null || true
+echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
+echo ""
+
 echo -e "${GREEN}=========================================${NC}"
 echo -e "${GREEN}Deployment complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
@@ -126,6 +131,7 @@ echo "  • Prometheus:  http://localhost:30090"
 echo "  • Uptime Kuma: http://localhost:30333"
 echo "  • n8n:         http://localhost:30555"
 echo "  • C64:         http://localhost:30064 (retro fun!)"
+echo "  • Code-Server: http://localhost:30443 (password: homelab123)"
 echo ""
 echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"

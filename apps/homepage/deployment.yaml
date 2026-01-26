@@ -78,6 +78,13 @@ data:
             description: Workflow Automation
             ping: http://localhost:30555
 
+    - Development:
+        - Code-Server:
+            icon: vscode.png
+            href: http://localhost:30443
+            description: VS Code in Browser
+            ping: http://localhost:30443
+
     - Fun:
         - C64 Emulator:
             icon: mdi-desktop-classic
@@ -127,6 +134,9 @@ data:
         style: row
         columns: 4
       Automation:
+        style: row
+        columns: 1
+      Development:
         style: row
         columns: 1
       Fun:

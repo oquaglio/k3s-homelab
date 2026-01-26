@@ -1,0 +1,6 @@
+apiVersion: v2
+name: code-server
+description: VS Code in the browser - self-hosted development environment
+type: application
+version: 1.0.0
+appVersion: "latest"

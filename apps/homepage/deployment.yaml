@@ -93,6 +93,11 @@ data:
             ping: http://localhost:30064
 
     - Cluster:
+        - ArgoCD:
+            icon: argocd.png
+            href: http://localhost:30888
+            description: GitOps Continuous Delivery
+            ping: http://localhost:30888
         - Kubernetes Dashboard:
             icon: kubernetes-dashboard.png
             href: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/

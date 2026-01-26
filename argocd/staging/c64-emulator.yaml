@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: c64-emulator-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/oquaglio/k3s-homelab.git
+    targetRevision: HEAD
+    path: charts/c64-emulator
+    helm:
+      values: |
+        service:
+          nodePort: 31064
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false  # Allow manual changes for testing
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

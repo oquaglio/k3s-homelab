@@ -21,8 +21,13 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-echo -e "${YELLOW}Step 1: Installing ArgoCD...${NC}"
-kubectl apply -f argocd/install.yaml
+echo -e "${YELLOW}Step 1: Creating argocd namespace...${NC}"
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+echo -e "${GREEN}✓ Namespace ready${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 2: Installing ArgoCD...${NC}"
+kubectl apply -f argocd/install.yaml -n argocd
 
 echo "Waiting for ArgoCD to be ready..."
 echo -n "  Waiting for ArgoCD pods"
@@ -37,7 +42,7 @@ echo ""
 echo -e "${GREEN}✓ ArgoCD installed${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 2: Getting ArgoCD admin password...${NC}"
+echo -e "${YELLOW}Step 3: Getting ArgoCD admin password...${NC}"
 sleep 5  # Wait a bit for the secret to be created
 ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" 2>/dev/null | base64 -d)
 if [ -z "$ARGOCD_PASSWORD" ]; then
@@ -48,7 +53,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 3: Deploying App-of-Apps (k3s-homelab)...${NC}"
+echo -e "${YELLOW}Step 4: Deploying App-of-Apps (k3s-homelab)...${NC}"
 kubectl apply -f argocd/app-of-apps.yaml
 echo -e "${GREEN}✓ App-of-Apps deployed${NC}"
 echo ""

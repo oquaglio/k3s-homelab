@@ -1,0 +1,19 @@
+# C64 Emulator - Because your Kubernetes cluster needs more 8-bit nostalgia
+
+image:
+  repository: nginx
+  tag: alpine
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30064  # 64 for C64!
+
+resources:
+  requests:
+    memory: "32Mi"
+    cpu: "10m"
+  limits:
+    memory: "64Mi"
+    cpu: "100m"

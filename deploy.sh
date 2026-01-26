@@ -99,6 +99,11 @@ helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wai
 echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 echo ""
 
+echo -e "${YELLOW}Step 7: Deploying C64 Emulator (for fun!)...${NC}"
+helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s 2>/dev/null || true
+echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
+echo ""
+
 echo -e "${GREEN}=========================================${NC}"
 echo -e "${GREEN}Deployment complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
@@ -120,6 +125,7 @@ echo "  • Grafana:     http://localhost:30080"
 echo "  • Prometheus:  http://localhost:30090"
 echo "  • Uptime Kuma: http://localhost:30333"
 echo "  • n8n:         http://localhost:30555"
+echo "  • C64:         http://localhost:30064 (retro fun!)"
 echo ""
 echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"

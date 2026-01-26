@@ -78,6 +78,13 @@ data:
             description: Workflow Automation
             ping: http://localhost:30555
 
+    - Fun:
+        - C64 Emulator:
+            icon: mdi-desktop-classic
+            href: http://localhost:30064
+            description: Commodore 64 in K8s!
+            ping: http://localhost:30064
+
     - Cluster:
         - Kubernetes Dashboard:
             icon: kubernetes-dashboard.png
@@ -120,6 +127,9 @@ data:
         style: row
         columns: 4
       Automation:
+        style: row
+        columns: 1
+      Fun:
         style: row
         columns: 1
       Cluster:

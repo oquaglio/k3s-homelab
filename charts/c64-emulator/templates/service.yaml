@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: c64-emulator
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: c64-emulator
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80
+      nodePort: {{ .Values.service.nodePort }}
+      name: http

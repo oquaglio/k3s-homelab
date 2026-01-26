@@ -1,0 +1,341 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-html
+  namespace: {{ .Release.Namespace }}
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>C64 BASIC - K3s Homelab</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                background: #4040e0;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+            .monitor {
+                background: #2a2a2a;
+                border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            }
+            .screen {
+                background: #4040e0;
+                border: 8px solid #1a1a1a;
+                border-radius: 10px;
+                padding: 20px;
+                width: 640px;
+                height: 480px;
+                overflow: hidden;
+                position: relative;
+            }
+            .screen::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: repeating-linear-gradient(
+                    0deg,
+                    rgba(0,0,0,0.1) 0px,
+                    rgba(0,0,0,0.1) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+                pointer-events: none;
+            }
+            #terminal {
+                font-family: 'Courier New', monospace;
+                font-size: 16px;
+                color: #a0a0ff;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                height: 100%;
+                overflow-y: auto;
+                line-height: 1.4;
+            }
+            #terminal::-webkit-scrollbar { width: 0; }
+            .cursor {
+                display: inline-block;
+                width: 10px;
+                height: 16px;
+                background: #a0a0ff;
+                animation: blink 0.5s infinite;
+                vertical-align: bottom;
+            }
+            @keyframes blink {
+                0%, 50% { opacity: 1; }
+                51%, 100% { opacity: 0; }
+            }
+            #input {
+                position: absolute;
+                left: -9999px;
+            }
+            .badge {
+                text-align: center;
+                margin-top: 15px;
+                color: #888;
+                font-family: sans-serif;
+                font-size: 12px;
+            }
+            .help {
+                background: #333;
+                color: #aaa;
+                padding: 15px;
+                margin-top: 15px;
+                border-radius: 5px;
+                font-family: monospace;
+                font-size: 12px;
+            }
+            .help strong { color: #a0a0ff; }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div class="monitor">
+                <div class="screen" id="screenArea">
+                    <div id="terminal"></div>
+                </div>
+            </div>
+            <div class="badge">Running on K3s Homelab - 100% Self-Hosted</div>
+            <div class="help">
+                <strong>Commands:</strong> LIST, RUN, NEW, HELP<br>
+                <strong>Try:</strong> 10 PRINT "HELLO" &nbsp;|&nbsp; 20 GOTO 10 &nbsp;|&nbsp; RUN<br>
+                <strong>Stop:</strong> Press ESC to break
+            </div>
+        </div>
+        <input type="text" id="input" autocomplete="off" autofocus>
+        <script>
+        (function() {
+            const term = document.getElementById('terminal');
+            const input = document.getElementById('input');
+            const screen = document.getElementById('screenArea');
+            let program = {};
+            let output = [];
+            let currentLine = '';
+            let running = false;
+            let runTimeout = null;
+            const vars = {};
+
+            function print(text) {
+                output.push(text);
+                render();
+            }
+
+            function render() {
+                let html = output.join('\n');
+                html += '\n' + currentLine + '<span class="cursor"></span>';
+                term.innerHTML = html;
+                term.scrollTop = term.scrollHeight;
+            }
+
+            function boot() {
+                output = [
+                    '',
+                    '    **** COMMODORE 64 BASIC V2 ****',
+                    '',
+                    ' 64K RAM SYSTEM  38911 BASIC BYTES FREE',
+                    '',
+                    'READY.'
+                ];
+                render();
+            }
+
+            function parseLine(line) {
+                const upper = line.toUpperCase().trim();
+                const match = upper.match(/^(\d+)\s+(.*)$/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    const code = line.substring(match[1].length).trim();
+                    if (code === '') {
+                        delete program[num];
+                    } else {
+                        program[num] = code;
+                    }
+                    return null;
+                }
+                return upper;
+            }
+
+            function execute(cmd) {
+                if (cmd === 'LIST') {
+                    const lines = Object.keys(program).map(Number).sort((a,b) => a-b);
+                    if (lines.length === 0) {
+                        print('');
+                    } else {
+                        lines.forEach(n => print(n + ' ' + program[n]));
+                    }
+                    print('READY.');
+                } else if (cmd === 'NEW') {
+                    program = {};
+                    Object.keys(vars).forEach(k => delete vars[k]);
+                    print('READY.');
+                } else if (cmd === 'RUN') {
+                    runProgram();
+                } else if (cmd === 'HELP') {
+                    print('COMMANDS: LIST, RUN, NEW, HELP');
+                    print('STATEMENTS: PRINT, LET, GOTO, IF..THEN');
+                    print('EXAMPLE:');
+                    print('  10 PRINT "HELLO"');
+                    print('  20 GOTO 10');
+                    print('  RUN');
+                    print('');
+                    print('PRESS ESC TO STOP RUNNING PROGRAM');
+                    print('READY.');
+                } else if (cmd.startsWith('PRINT')) {
+                    const arg = cmd.substring(5).trim();
+                    print(evalExpr(arg));
+                    print('READY.');
+                } else if (cmd.startsWith('LET ')) {
+                    execLet(cmd.substring(4));
+                    print('READY.');
+                } else if (cmd !== '') {
+                    print('?SYNTAX ERROR');
+                    print('READY.');
+                } else {
+                    print('READY.');
+                }
+            }
+
+            function evalExpr(expr) {
+                expr = expr.trim();
+                // String literal
+                const strMatch = expr.match(/^"([^"]*)"$/);
+                if (strMatch) return strMatch[1];
+                // Variable
+                if (/^[A-Z]\$?$/.test(expr)) {
+                    return vars[expr] !== undefined ? vars[expr] : 0;
+                }
+                // Number
+                if (/^-?\d+$/.test(expr)) return parseInt(expr);
+                // Simple concatenation with ;
+                if (expr.includes(';')) {
+                    return expr.split(';').map(e => evalExpr(e)).join('');
+                }
+                // Simple math
+                try {
+                    const mathExpr = expr.replace(/[A-Z]\$?/g, v => vars[v] || 0);
+                    if (/^[\d\s\+\-\*\/\(\)]+$/.test(mathExpr)) {
+                        return eval(mathExpr);
+                    }
+                } catch(e) {}
+                return expr;
+            }
+
+            function execLet(stmt) {
+                const m = stmt.match(/^([A-Z]\$?)\s*=\s*(.+)$/);
+                if (m) {
+                    vars[m[1]] = evalExpr(m[2]);
+                }
+            }
+
+            function runProgram() {
+                const lines = Object.keys(program).map(Number).sort((a,b) => a-b);
+                if (lines.length === 0) {
+                    print('READY.');
+                    return;
+                }
+                running = true;
+                let idx = 0;
+                let iterations = 0;
+                const maxIter = 10000;
+
+                function step() {
+                    if (!running || idx >= lines.length || iterations++ > maxIter) {
+                        running = false;
+                        if (iterations > maxIter) print('?BREAK');
+                        print('READY.');
+                        return;
+                    }
+                    const lineNum = lines[idx];
+                    const code = program[lineNum].toUpperCase();
+
+                    if (code.startsWith('PRINT')) {
+                        print(evalExpr(code.substring(5).trim()));
+                        idx++;
+                    } else if (code.startsWith('LET ')) {
+                        execLet(code.substring(4));
+                        idx++;
+                    } else if (code.startsWith('GOTO ')) {
+                        const target = parseInt(code.substring(5));
+                        const targetIdx = lines.indexOf(target);
+                        if (targetIdx >= 0) idx = targetIdx;
+                        else { print('?UNDEF LINE'); running = false; return; }
+                    } else if (code.startsWith('IF ')) {
+                        const m = code.match(/^IF\s+(.+)\s+THEN\s+(\d+)$/);
+                        if (m) {
+                            const cond = m[1].replace(/[A-Z]\$?/g, v => vars[v] || 0);
+                            let result = false;
+                            try { result = eval(cond.replace('=','==').replace('<>','!=')); } catch(e) {}
+                            if (result) {
+                                const target = parseInt(m[2]);
+                                const targetIdx = lines.indexOf(target);
+                                if (targetIdx >= 0) idx = targetIdx;
+                                else { print('?UNDEF LINE'); running = false; return; }
+                            } else {
+                                idx++;
+                            }
+                        } else {
+                            idx++;
+                        }
+                    } else if (code === 'END') {
+                        running = false;
+                        print('READY.');
+                        return;
+                    } else {
+                        idx++;
+                    }
+                    runTimeout = setTimeout(step, 50);
+                }
+                step();
+            }
+
+            function stopProgram() {
+                if (running) {
+                    running = false;
+                    if (runTimeout) clearTimeout(runTimeout);
+                    print('');
+                    print('BREAK');
+                    print('READY.');
+                }
+            }
+
+            screen.addEventListener('click', () => input.focus());
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    stopProgram();
+                    return;
+                }
+                if (running) return;
+
+                if (e.key === 'Enter') {
+                    output.push(currentLine);
+                    const cmd = parseLine(currentLine);
+                    currentLine = '';
+                    if (cmd !== null) {
+                        execute(cmd);
+                    } else {
+                        print('READY.');
+                    }
+                } else if (e.key === 'Backspace') {
+                    currentLine = currentLine.slice(0, -1);
+                    render();
+                } else if (e.key.length === 1) {
+                    currentLine += e.key.toUpperCase();
+                    render();
+                }
+            });
+
+            boot();
+            input.focus();
+        })();
+        </script>
+    </body>
+    </html>

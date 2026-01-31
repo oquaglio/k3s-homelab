@@ -27,7 +27,7 @@ fi
 echo -e "${YELLOW}Step 1: Deploying Homepage (Dashboard)...${NC}"
 kubectl apply -f apps/homepage/deployment.yaml
 echo "Waiting for Homepage to be ready..."
-kubectl wait --for=condition=ready pod -l app=homepage --timeout=120s 2>/dev/null || true
+kubectl wait --for=condition=ready pod -l app=homepage --timeout=120s || echo -e "${YELLOW}Warning: Homepage pods may still be starting${NC}"
 echo -e "${GREEN}✓ Homepage deployed${NC}"
 echo ""
 
@@ -37,7 +37,7 @@ echo "Waiting for Portainer to be ready..."
 # Wait for deployment to exist first
 kubectl wait --for=jsonpath='{.status.replicas}'=1 deployment/portainer -n portainer --timeout=60s 2>/dev/null || sleep 10
 # Then wait for pods
-kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s 2>/dev/null || true
+kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s || echo -e "${YELLOW}Warning: Portainer pods may still be starting${NC}"
 
 # Wait for Portainer API to be ready and initialize admin user
 PORTAINER_URL="http://localhost:30777"
@@ -72,7 +72,7 @@ echo -e "${YELLOW}Step 3: Deploying Kubernetes Dashboard...${NC}"
 kubectl apply -f monitoring/kubernetes-dashboard/dashboard.yaml
 kubectl apply -f monitoring/kubernetes-dashboard/admin-user.yaml
 echo "Waiting for Dashboard to be ready..."
-kubectl wait --for=condition=ready pod -l k8s-app=kubernetes-dashboard -n kubernetes-dashboard --timeout=120s || true
+kubectl wait --for=condition=ready pod -l k8s-app=kubernetes-dashboard -n kubernetes-dashboard --timeout=120s || echo -e "${YELLOW}Warning: Dashboard pods may still be starting${NC}"
 echo -e "${GREEN}✓ Kubernetes Dashboard deployed${NC}"
 echo ""
 
@@ -80,40 +80,52 @@ echo -e "${YELLOW}Step 4: Deploying Kube Prometheus Stack (Grafana + Prometheus)
 echo "This may take a few minutes..."
 # Create namespace first
 kubectl apply -f monitoring/kube-prometheus-stack/namespace.yaml
+# Clean up any leftover non-Helm resources that would block Helm installation
+kubectl delete secret kube-prometheus-stack-grafana -n monitoring 2>/dev/null || true
 # Deploy with Helm (will automatically install CRDs first)
-helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+if helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --values monitoring/kube-prometheus-stack/values.yaml \
   --wait \
-  --timeout 5m 2>/dev/null || true
-echo "Waiting for Grafana to be ready..."
+  --timeout 5m; then
+  echo -e "${GREEN}✓ Kube Prometheus Stack deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy Kube Prometheus Stack${NC}"
+  echo "  Check logs with: kubectl get pods -n monitoring"
+fi
 # Delete the test pod if it exists (it's not needed)
 kubectl delete pod kube-prometheus-stack-grafana-test -n monitoring 2>/dev/null || true
-# Wait for the deployment
-kubectl wait --for=condition=available deployment/kube-prometheus-stack-grafana -n monitoring --timeout=300s 2>/dev/null || true
-echo -e "${GREEN}✓ Kube Prometheus Stack deployed (Helm)${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 5: Deploying Uptime Kuma...${NC}"
 kubectl apply -f monitoring/uptime-kuma/uptime-kuma.yaml
 echo "Waiting for Uptime Kuma to be ready..."
-kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeout=120s 2>/dev/null || true
+kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeout=120s || echo -e "${YELLOW}Warning: Uptime Kuma pods may still be starting${NC}"
 echo -e "${GREEN}✓ Uptime Kuma deployed${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 6: Deploying n8n (Workflow Automation) via Helm...${NC}"
-helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s 2>/dev/null || true
-echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
+if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
+  echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy n8n${NC}"
+fi
 echo ""
 
 echo -e "${YELLOW}Step 7: Deploying C64 Emulator (for fun!)...${NC}"
-helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s 2>/dev/null || true
-echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
+if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
+  echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy C64 Emulator${NC}"
+fi
 echo ""
 
 echo -e "${YELLOW}Step 8: Deploying Code-Server (VS Code in browser)...${NC}"
-helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s 2>/dev/null || true
-echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
+if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
+  echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy Code-Server${NC}"
+fi
 echo ""
 
 echo -e "${GREEN}=========================================${NC}"

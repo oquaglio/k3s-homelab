@@ -99,11 +99,11 @@ sudo /usr/local/bin/k3s-uninstall.sh
 To manage the cluster from your laptop:
 
 ```bash
-# On Fedora server
+# On K3S server
 ./generate-remote-config.sh
 
-# On your laptop
-scp otto@<server-ip>:~/k3s-homelab/configs/k3s-remote.yaml ~/.kube/config-homelab
+# On another machine
+scp <user>@<server-ip>:~/k3s-homelab/configs/k3s-remote.yaml ~/.kube/config-homelab
 
 # Use it
 export KUBECONFIG=~/.kube/config-homelab

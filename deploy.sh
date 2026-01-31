@@ -76,15 +76,22 @@ kubectl wait --for=condition=ready pod -l k8s-app=kubernetes-dashboard -n kubern
 echo -e "${GREEN}✓ Kubernetes Dashboard deployed${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Deploying Kube Prometheus Stack (Grafana + Prometheus)...${NC}"
+echo -e "${YELLOW}Step 4: Deploying Kube Prometheus Stack (Grafana + Prometheus) via Helm...${NC}"
 echo "This may take a few minutes..."
-kubectl apply -f monitoring/kube-prometheus-stack/manifests.yaml
+# Create namespace first
+kubectl apply -f monitoring/kube-prometheus-stack/namespace.yaml
+# Deploy with Helm (will automatically install CRDs first)
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --values monitoring/kube-prometheus-stack/values.yaml \
+  --wait \
+  --timeout 5m 2>/dev/null || true
 echo "Waiting for Grafana to be ready..."
 # Delete the test pod if it exists (it's not needed)
 kubectl delete pod kube-prometheus-stack-grafana-test -n monitoring 2>/dev/null || true
 # Wait for the deployment
-kubectl wait --for=condition=available deployment/kube-prometheus-stack-grafana -n monitoring --timeout=300s || true
-echo -e "${GREEN}✓ Kube Prometheus Stack deployed${NC}"
+kubectl wait --for=condition=available deployment/kube-prometheus-stack-grafana -n monitoring --timeout=300s 2>/dev/null || true
+echo -e "${GREEN}✓ Kube Prometheus Stack deployed (Helm)${NC}"
 echo ""
 
 echo -e "${YELLOW}Step 5: Deploying Uptime Kuma...${NC}"

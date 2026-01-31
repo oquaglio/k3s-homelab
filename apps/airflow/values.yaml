@@ -1,0 +1,131 @@
+# Apache Airflow - Homelab Configuration
+# Optimized for K3s with KubernetesExecutor
+
+# Executor - KubernetesExecutor spawns pods for each task
+executor: "KubernetesExecutor"
+
+# Airflow version - using chart default (3.0.2)
+# defaultAirflowTag: "2.10.4"
+
+# Database connection configuration
+data:
+  metadataConnection:
+    user: airflow
+    pass: airflow
+    protocol: postgresql
+    host: ~
+    port: 5432
+    db: airflow
+
+# Scheduler configuration (API server settings moved to service patch)
+# Note: API server service is patched to NodePort 30808 via kubectl
+
+# Scheduler configuration
+scheduler:
+  replicas: 1
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Database - Use embedded PostgreSQL for homelab
+# Override with working PostgreSQL image
+postgresql:
+  enabled: true
+  auth:
+    enablePostgresUser: true
+    postgresPassword: airflow
+    username: airflow
+    password: airflow
+    database: airflow
+
+  image:
+    tag: latest
+
+  primary:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+    persistence:
+      enabled: true
+      size: 5Gi
+
+# Redis - Not needed for KubernetesExecutor (only used with CeleryExecutor)
+redis:
+  enabled: false
+
+# Enable triggerer for event-driven workflows (optional, can disable to save resources)
+triggerer:
+  enabled: true
+  replicas: 1
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# DAG configuration
+dags:
+  # GitSync disabled - use volume mount or ConfigMap for DAGs in homelab
+  gitSync:
+    enabled: false
+
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+
+# Logs persistence
+# Disable shared logs for homelab - not needed with single scheduler
+logs:
+  persistence:
+    enabled: false
+
+# Airflow configuration overrides
+config:
+  core:
+    # Load example DAGs for learning
+    load_examples: 'True'
+  webserver:
+    # Allow connections from any host (for homelab)
+    base_url: http://localhost:30808
+    expose_config: 'True'
+  logging:
+    remote_logging: 'False'
+
+# Default user credentials
+webserverSecretKeySecretName: ~
+
+# Create initial admin user
+createUserJob:
+  useHelmHooks: false
+
+# Environment variables
+env:
+  - name: AIRFLOW__CORE__LOAD_EXAMPLES
+    value: "True"
+  - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
+    value: "True"
+
+# Disable certain features for homelab
+statsd:
+  enabled: false
+
+pgbouncer:
+  enabled: false
+
+# Flower (Celery monitoring) - not needed for KubernetesExecutor
+flower:
+  enabled: false

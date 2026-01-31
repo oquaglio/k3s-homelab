@@ -128,6 +128,24 @@ else
 fi
 echo ""
 
+echo -e "${YELLOW}Step 9: Deploying Apache Airflow (Workflow Orchestration) via Helm...${NC}"
+echo "This may take a few minutes (includes PostgreSQL database)..."
+# Create namespace
+kubectl apply -f apps/airflow/namespace.yaml
+# Deploy Airflow with KubernetesExecutor
+if helm upgrade --install airflow apache-airflow/airflow \
+  --namespace airflow \
+  --values apps/airflow/values.yaml \
+  --wait \
+  --timeout 5m; then
+  echo -e "${GREEN}✓ Apache Airflow deployed (Helm)${NC}"
+  echo "  Default credentials: admin / admin"
+else
+  echo -e "${RED}✗ Failed to deploy Apache Airflow${NC}"
+  echo "  Check logs with: kubectl get pods -n airflow"
+fi
+echo ""
+
 echo -e "${GREEN}=========================================${NC}"
 echo -e "${GREEN}Deployment complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
@@ -149,6 +167,7 @@ echo "  • Grafana:     http://localhost:30080"
 echo "  • Prometheus:  http://localhost:30090"
 echo "  • Uptime Kuma: http://localhost:30333"
 echo "  • n8n:         http://localhost:30555"
+echo "  • Airflow:     http://localhost:30808 (admin/admin)"
 echo "  • C64:         http://localhost:30064 (retro fun!)"
 echo "  • Code-Server: http://localhost:30443 (password: homelab123)"
 echo ""

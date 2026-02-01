@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "spark.fullname" . }}-master
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "spark.labels" . | nindent 4 }}
+    component: master
+spec:
+  replicas: {{ .Values.master.replicas }}
+  selector:
+    matchLabels:
+      {{- include "spark.masterSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "spark.masterSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.kafka.enabled }}
+      initContainers:
+        - name: download-kafka-jars
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              MAVEN=https://repo1.maven.org/maven2
+              SPARK_V={{ .Values.kafka.spark.version }}
+              SCALA={{ .Values.kafka.spark.scala }}
+              KAFKA_V={{ .Values.kafka.kafkaClientsVersion }}
+              POOL_V={{ .Values.kafka.commonsPool2Version }}
+              wget -q -P /jars "${MAVEN}/org/apache/spark/spark-sql-kafka-0-10_${SCALA}/${SPARK_V}/spark-sql-kafka-0-10_${SCALA}-${SPARK_V}.jar"
+              wget -q -P /jars "${MAVEN}/org/apache/spark/spark-token-provider-kafka-assembly_${SCALA}/${SPARK_V}/spark-token-provider-kafka-assembly_${SCALA}-${SPARK_V}.jar"
+              wget -q -P /jars "${MAVEN}/org/apache/kafka/kafka-clients/${KAFKA_V}/kafka-clients-${KAFKA_V}.jar"
+              wget -q -P /jars "${MAVEN}/org/apache/commons/commons-pool2/${POOL_V}/commons-pool2-${POOL_V}.jar"
+              echo "Downloaded Kafka connector JARs:"
+              ls -la /jars/
+          volumeMounts:
+            - name: kafka-jars
+              mountPath: /jars
+      {{- end }}
+      containers:
+        - name: spark-master
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.master.sparkPort }}
+              name: spark
+            - containerPort: {{ .Values.master.webUiPort }}
+              name: web-ui
+          env:
+            - name: SPARK_MODE
+              value: "master"
+            - name: SPARK_MASTER_HOST
+              value: "0.0.0.0"
+          {{- if .Values.kafka.enabled }}
+          volumeMounts:
+            - name: kafka-jars
+              mountPath: /opt/bitnami/spark/custom-jars
+          {{- end }}
+          resources:
+            requests:
+              memory: {{ .Values.master.resources.requests.memory | quote }}
+              cpu: {{ .Values.master.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.master.resources.limits.memory | quote }}
+              cpu: {{ .Values.master.resources.limits.cpu | quote }}
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: web-ui
+            initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web-ui
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          {{- end }}
+      {{- if .Values.kafka.enabled }}
+      volumes:
+        - name: kafka-jars
+          emptyDir: {}
+      {{- end }}

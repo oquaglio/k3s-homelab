@@ -1,0 +1,56 @@
+# Apache Spark Helm Chart - Default Values
+# Deploys a Spark master + worker(s) with Kafka connector JARs pre-loaded
+
+# Container image settings
+image:
+  repository: bitnami/spark
+  tag: "3.5"
+  pullPolicy: IfNotPresent
+
+# Master configuration
+master:
+  replicas: 1
+  webUiPort: 8080
+  sparkPort: 7077
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# Worker configuration
+worker:
+  replicas: 1
+  webUiPort: 8081
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# Service configuration
+service:
+  type: NodePort
+  webUiNodePort: 30808
+
+# Kafka integration
+# JARs are downloaded by an init container from Maven Central
+kafka:
+  enabled: true
+  bootstrapServers: "kafka-kafka.kafka.svc.cluster.local:9092"
+  # Spark 3.5.x / Scala 2.12 compatible versions
+  spark:
+    version: "3.5.4"
+    scala: "2.12"
+  kafkaClientsVersion: "3.7.1"
+  commonsPool2Version: "2.12.0"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10

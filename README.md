@@ -51,6 +51,7 @@ That's it! Your homelab is running.
 - **Kafka** - Event streaming platform (port 30092)
 - **AKHQ** - Kafka management UI (port 30093)
 - **Kafka UI** - Kafka management UI by Provectus (port 30094)
+- **Spark** - Distributed data processing with Kafka integration (UI port 30808)
 - **n8n** - Workflow automation (port 30555)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
 - **Code-Server** - VS Code in browser (port 30443)
@@ -75,6 +76,7 @@ kubectl get svc --all-namespaces
 - MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - AKHQ: http://localhost:30093 (Kafka UI)
 - Kafka UI: http://localhost:30094 (Kafka UI)
+- Spark Master: http://localhost:30808 (cluster dashboard)
 - n8n: http://localhost:30555
 - C64 Emulator: http://localhost:30064
 - Code-Server: http://localhost:30443
@@ -83,6 +85,34 @@ kubectl get svc --all-namespaces
 - PostgreSQL: `psql -h localhost -p 30432 -U postgres -d homelab`
 - MinIO (S3 API): http://localhost:30900
 - Kafka: `kafka-console-producer --bootstrap-server localhost:30092 --topic test`
+
+**Spark + Kafka Integration:**
+
+Spark is pre-loaded with `spark-sql-kafka` connector JARs. To use Kafka as a source/sink from within the cluster:
+```python
+# PySpark - read from Kafka topic
+df = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "kafka-kafka.kafka.svc.cluster.local:9092") \
+    .option("subscribe", "my-topic") \
+    .load()
+
+# PySpark - write to Kafka topic
+df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)") \
+    .writeStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "kafka-kafka.kafka.svc.cluster.local:9092") \
+    .option("topic", "output-topic") \
+    .option("checkpointLocation", "/tmp/checkpoint") \
+    .start()
+```
+
+Submit a job with Kafka JARs:
+```bash
+kubectl exec -it deploy/spark-spark-master -n spark -- \
+  spark-submit --jars /opt/bitnami/spark/custom-jars/* \
+  your-app.py
+```
 
 **Kubernetes Dashboard:**
 ```bash
@@ -157,6 +187,7 @@ k3s-homelab/
 │   ├── kafka/                # Confluent Kafka (KRaft)
 │   ├── akhq/                 # AKHQ Kafka management UI
 │   ├── kafka-ui/             # Kafka UI (Provectus)
+│   ├── spark/                # Apache Spark (master + worker)
 │   ├── n8n/                  # Workflow automation
 │   ├── code-server/          # VS Code in browser
 │   └── c64-emulator/         # Commodore 64 emulator

@@ -37,45 +37,51 @@ helm uninstall n8n --namespace n8n 2>/dev/null || true
 echo -e "${GREEN}✓ n8n deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Deleting PostgreSQL (Helm)...${NC}"
+echo -e "${YELLOW}Step 4: Deleting MinIO (Helm)...${NC}"
+helm uninstall minio --namespace minio 2>/dev/null || true
+echo -e "${GREEN}✓ MinIO deleted${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 5: Deleting PostgreSQL (Helm)...${NC}"
 helm uninstall postgresql --namespace postgresql 2>/dev/null || true
 echo -e "${GREEN}✓ PostgreSQL deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 5: Deleting Uptime Kuma...${NC}"
+echo -e "${YELLOW}Step 6: Deleting Uptime Kuma...${NC}"
 kubectl delete -f monitoring/uptime-kuma/uptime-kuma.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Uptime Kuma deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deleting Kube Prometheus Stack...${NC}"
+echo -e "${YELLOW}Step 7: Deleting Kube Prometheus Stack...${NC}"
 kubectl delete -f monitoring/kube-prometheus-stack/manifests.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kube Prometheus Stack deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 7: Deleting Kubernetes Dashboard...${NC}"
+echo -e "${YELLOW}Step 8: Deleting Kubernetes Dashboard...${NC}"
 kubectl delete -f monitoring/kubernetes-dashboard/admin-user.yaml --ignore-not-found=true
 kubectl delete -f monitoring/kubernetes-dashboard/dashboard.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kubernetes Dashboard deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 8: Deleting Portainer...${NC}"
+echo -e "${YELLOW}Step 9: Deleting Portainer...${NC}"
 kubectl delete -f monitoring/portainer/portainer.yaml --ignore-not-found=true
 kubectl delete namespace portainer --ignore-not-found=true
 echo -e "${GREEN}✓ Portainer deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 9: Deleting Homepage...${NC}"
+echo -e "${YELLOW}Step 10: Deleting Homepage...${NC}"
 kubectl delete -f apps/homepage/deployment.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Homepage deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 10: Cleaning up secrets...${NC}"
+echo -e "${YELLOW}Step 11: Cleaning up secrets...${NC}"
 kubectl delete secret portainer-admin-password -n portainer --ignore-not-found=true
 kubectl delete secret kube-prometheus-stack-grafana -n monitoring --ignore-not-found=true
 echo -e "${GREEN}✓ Secrets deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 11: Deleting namespaces...${NC}"
+echo -e "${YELLOW}Step 12: Deleting namespaces...${NC}"
+kubectl delete namespace minio --ignore-not-found=true
 kubectl delete namespace postgresql --ignore-not-found=true
 kubectl delete namespace n8n --ignore-not-found=true
 kubectl delete -f monitoring/kube-prometheus-stack/namespace.yaml --ignore-not-found=true

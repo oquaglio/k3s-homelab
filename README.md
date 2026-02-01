@@ -47,6 +47,7 @@ That's it! Your homelab is running.
 - **Prometheus** - Metrics collection (port 30090)
 - **Uptime Kuma** - Uptime monitoring (port 30333)
 - **PostgreSQL** - Relational database (port 30432)
+- **MinIO** - Object storage (API port 30900, Console port 30901)
 - **n8n** - Workflow automation (port 30555)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
 - **Code-Server** - VS Code in browser (port 30443)
@@ -68,12 +69,14 @@ kubectl get svc --all-namespaces
 - Grafana: http://localhost:30080
 - Prometheus: http://localhost:30090
 - Uptime Kuma: http://localhost:30333
+- MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - n8n: http://localhost:30555
 - C64 Emulator: http://localhost:30064
 - Code-Server: http://localhost:30443
 
 **Databases:**
 - PostgreSQL: `psql -h localhost -p 30432 -U postgres -d homelab`
+- MinIO (S3 API): http://localhost:30900
 
 **Kubernetes Dashboard:**
 ```bash
@@ -144,6 +147,7 @@ k3s-homelab/
 │
 ├── charts/                   # Helm charts
 │   ├── postgresql/           # PostgreSQL database
+│   ├── minio/                # MinIO object storage
 │   ├── n8n/                  # Workflow automation
 │   ├── code-server/          # VS Code in browser
 │   └── c64-emulator/         # Commodore 64 emulator

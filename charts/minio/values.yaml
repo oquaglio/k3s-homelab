@@ -1,0 +1,45 @@
+# MinIO Helm Chart - Default Values
+# Override these when installing: helm install minio ./charts/minio --set config.rootPassword=secret
+
+# Container image settings
+image:
+  repository: minio/minio
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas (MinIO single-node mode)
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  apiPort: 9000
+  apiNodePort: 30900
+  consolePort: 9001
+  consoleNodePort: 30901
+
+# Persistent storage
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# MinIO configuration
+config:
+  rootUser: "minioadmin"
+  rootPassword: "minioadmin"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 15
+  periodSeconds: 10

@@ -185,7 +185,7 @@ spec:
               name: http
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "localhost:30000,127.0.0.1:30000"
+              value: "*"
           volumeMounts:
             - name: config
               mountPath: /app/config

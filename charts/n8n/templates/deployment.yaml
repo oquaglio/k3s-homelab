@@ -35,6 +35,8 @@ spec:
               value: {{ .Values.config.webhookUrl | quote }}
             - name: GENERIC_TIMEZONE
               value: {{ .Values.config.timezone | quote }}
+            - name: N8N_SECURE_COOKIE
+              value: "false"
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: data

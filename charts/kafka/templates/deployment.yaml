@@ -21,7 +21,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.config.internalPort }}
-              name: broker
+              name: internal
+            - containerPort: {{ .Values.config.externalPort }}
+              name: external
             - containerPort: {{ .Values.config.controllerPort }}
               name: controller
           env:
@@ -35,16 +37,18 @@ spec:
             - name: CLUSTER_ID
               value: {{ .Values.config.clusterId | quote }}
             # Listener configuration
+            # INTERNAL: for in-cluster clients (AKHQ, Kafka UI, other pods)
+            # EXTERNAL: for access from outside the cluster via NodePort
             - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://:{{ .Values.config.internalPort }},CONTROLLER://:{{ .Values.config.controllerPort }}"
+              value: "INTERNAL://:{{ .Values.config.internalPort }},EXTERNAL://:{{ .Values.config.externalPort }},CONTROLLER://:{{ .Values.config.controllerPort }}"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://localhost:{{ .Values.service.nodePort }}"
+              value: "INTERNAL://{{ include "kafka.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.config.internalPort }},EXTERNAL://localhost:{{ .Values.service.nodePort }}"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+              value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
-              value: "PLAINTEXT"
+              value: "INTERNAL"
             # Topic defaults
             - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
               value: {{ .Values.config.autoCreateTopics | quote }}
@@ -74,12 +78,12 @@ spec:
           {{- if .Values.healthcheck.enabled }}
           livenessProbe:
             tcpSocket:
-              port: broker
+              port: internal
             initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthcheck.periodSeconds }}
           readinessProbe:
             tcpSocket:
-              port: broker
+              port: internal
             initialDelaySeconds: 30
             periodSeconds: 10
           {{- end }}

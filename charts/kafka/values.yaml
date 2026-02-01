@@ -42,6 +42,7 @@ config:
   transactionStateReplicationFactor: 1
   # Listeners
   internalPort: 9092
+  externalPort: 9094
   controllerPort: 29093
 
 # Health checks

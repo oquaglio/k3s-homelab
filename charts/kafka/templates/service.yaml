@@ -10,9 +10,12 @@ spec:
   selector:
     {{- include "kafka.selectorLabels" . | nindent 4 }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.config.internalPort }}
       targetPort: {{ .Values.config.internalPort }}
+      name: internal
+    - port: {{ .Values.config.externalPort }}
+      targetPort: {{ .Values.config.externalPort }}
       {{- if eq .Values.service.type "NodePort" }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
-      name: broker
+      name: external

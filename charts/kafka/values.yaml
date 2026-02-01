@@ -1,0 +1,51 @@
+# Confluent Kafka Helm Chart - Default Values
+# Override these when installing: helm install kafka ./charts/kafka --set service.nodePort=31092
+
+# Container image settings
+image:
+  repository: confluentinc/cp-kafka
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas (single broker for homelab)
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 9092
+  nodePort: 30092
+
+# Persistent storage
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Resource limits
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "200m"
+  limits:
+    memory: "2Gi"
+    cpu: "1000m"
+
+# Kafka configuration
+config:
+  # KRaft cluster ID (generate with: kafka-storage random-uuid)
+  clusterId: "MkU3OEVBNTcwNTJENDM2Qk"
+  # Broker settings
+  autoCreateTopics: "true"
+  defaultReplicationFactor: 1
+  offsetsReplicationFactor: 1
+  transactionStateReplicationFactor: 1
+  # Listeners
+  internalPort: 9092
+  controllerPort: 29093
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 45
+  periodSeconds: 15

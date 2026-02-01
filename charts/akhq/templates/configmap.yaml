@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "akhq.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "akhq.labels" . | nindent 4 }}
+data:
+  application.yml: |
+    akhq:
+      connections:
+        homelab-kafka:
+          properties:
+            bootstrap.servers: {{ .Values.kafka.bootstrapServers | quote }}

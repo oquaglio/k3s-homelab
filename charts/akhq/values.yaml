@@ -1,0 +1,37 @@
+# AKHQ Helm Chart - Default Values
+# Override these when installing: helm install akhq ./charts/akhq --set service.nodePort=31093
+
+# Container image settings
+image:
+  repository: tchiotludo/akhq
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30093
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Kafka connection
+kafka:
+  # Internal cluster DNS name for the Kafka service
+  bootstrapServers: "kafka-kafka.kafka.svc.cluster.local:9092"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 25
+  periodSeconds: 10

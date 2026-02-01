@@ -40,12 +40,14 @@ spec:
               port: http
             initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthcheck.periodSeconds }}
+            failureThreshold: {{ .Values.healthcheck.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 5
+            failureThreshold: {{ .Values.healthcheck.failureThreshold }}
           {{- end }}
       volumes:
         - name: config

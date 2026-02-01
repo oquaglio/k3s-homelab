@@ -50,6 +50,7 @@ That's it! Your homelab is running.
 - **MinIO** - Object storage (API port 30900, Console port 30901)
 - **Kafka** - Event streaming platform (port 30092)
 - **AKHQ** - Kafka management UI (port 30093)
+- **Kafka UI** - Kafka management UI by Provectus (port 30094)
 - **n8n** - Workflow automation (port 30555)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
 - **Code-Server** - VS Code in browser (port 30443)
@@ -73,6 +74,7 @@ kubectl get svc --all-namespaces
 - Uptime Kuma: http://localhost:30333
 - MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - AKHQ: http://localhost:30093 (Kafka UI)
+- Kafka UI: http://localhost:30094 (Kafka UI)
 - n8n: http://localhost:30555
 - C64 Emulator: http://localhost:30064
 - Code-Server: http://localhost:30443
@@ -154,6 +156,7 @@ k3s-homelab/
 │   ├── minio/                # MinIO object storage
 │   ├── kafka/                # Confluent Kafka (KRaft)
 │   ├── akhq/                 # AKHQ Kafka management UI
+│   ├── kafka-ui/             # Kafka UI (Provectus)
 │   ├── n8n/                  # Workflow automation
 │   ├── code-server/          # VS Code in browser
 │   └── c64-emulator/         # Commodore 64 emulator

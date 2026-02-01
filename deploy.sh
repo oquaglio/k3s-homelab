@@ -136,7 +136,15 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 10: Deploying n8n (Workflow Automation) via Helm...${NC}"
+echo -e "${YELLOW}Step 10: Deploying Kafka UI (Provectus) via Helm...${NC}"
+if helm upgrade --install kafka-ui ./charts/kafka-ui --namespace kafka --create-namespace --wait --timeout 120s; then
+  echo -e "${GREEN}✓ Kafka UI deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy Kafka UI${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}Step 11: Deploying n8n (Workflow Automation) via Helm...${NC}"
 if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 else
@@ -144,7 +152,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 11: Deploying C64 Emulator (for fun!)...${NC}"
+echo -e "${YELLOW}Step 12: Deploying C64 Emulator (for fun!)...${NC}"
 if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 else
@@ -152,7 +160,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 12: Deploying Code-Server (VS Code in browser)...${NC}"
+echo -e "${YELLOW}Step 13: Deploying Code-Server (VS Code in browser)...${NC}"
 if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
   echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
 else
@@ -185,6 +193,7 @@ echo "  • MinIO API:   http://localhost:30900 (minioadmin/minioadmin)"
 echo "  • MinIO UI:    http://localhost:30901"
 echo "  • Kafka:       localhost:30092 (bootstrap server)"
 echo "  • AKHQ:       http://localhost:30093 (Kafka UI)"
+echo "  • Kafka UI:   http://localhost:30094 (Kafka UI)"
 echo "  • n8n:         http://localhost:30555"
 echo "  • C64:         http://localhost:30064 (retro fun!)"
 echo "  • Code-Server: http://localhost:30443 (password: homelab123)"

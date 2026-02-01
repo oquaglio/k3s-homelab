@@ -1,0 +1,37 @@
+# Kafka UI Helm Chart - Default Values
+# Override these when installing: helm install kafka-ui ./charts/kafka-ui --set service.nodePort=31094
+
+# Container image settings
+image:
+  repository: provectuslabs/kafka-ui
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30094
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Kafka connection
+kafka:
+  clusterName: "homelab-kafka"
+  bootstrapServers: "kafka-kafka.kafka.svc.cluster.local:9092"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 25
+  periodSeconds: 10

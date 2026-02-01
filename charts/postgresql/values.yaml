@@ -1,0 +1,44 @@
+# PostgreSQL Helm Chart - Default Values
+# Override these when installing: helm install postgresql ./charts/postgresql --set config.password=secret
+
+# Container image settings
+image:
+  repository: postgres
+  tag: "17"
+  pullPolicy: IfNotPresent
+
+# Number of replicas (PostgreSQL runs as single instance)
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 5432
+  nodePort: 30432
+
+# Persistent storage
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# PostgreSQL configuration
+config:
+  username: "postgres"
+  password: "postgres"
+  database: "homelab"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10

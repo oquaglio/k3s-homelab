@@ -104,7 +104,15 @@ kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeou
 echo -e "${GREEN}✓ Uptime Kuma deployed${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deploying n8n (Workflow Automation) via Helm...${NC}"
+echo -e "${YELLOW}Step 6: Deploying PostgreSQL via Helm...${NC}"
+if helm upgrade --install postgresql ./charts/postgresql --namespace postgresql --create-namespace --wait --timeout 120s; then
+  echo -e "${GREEN}✓ PostgreSQL deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy PostgreSQL${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}Step 7: Deploying n8n (Workflow Automation) via Helm...${NC}"
 if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 else
@@ -112,7 +120,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 7: Deploying C64 Emulator (for fun!)...${NC}"
+echo -e "${YELLOW}Step 8: Deploying C64 Emulator (for fun!)...${NC}"
 if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 else
@@ -120,7 +128,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 8: Deploying Code-Server (VS Code in browser)...${NC}"
+echo -e "${YELLOW}Step 9: Deploying Code-Server (VS Code in browser)...${NC}"
 if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
   echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
 else
@@ -148,6 +156,7 @@ echo "  • Portainer:   http://localhost:30777"
 echo "  • Grafana:     http://localhost:30080"
 echo "  • Prometheus:  http://localhost:30090"
 echo "  • Uptime Kuma: http://localhost:30333"
+echo "  • PostgreSQL:  localhost:30432 (user: postgres, db: homelab)"
 echo "  • n8n:         http://localhost:30555"
 echo "  • C64:         http://localhost:30064 (retro fun!)"
 echo "  • Code-Server: http://localhost:30443 (password: homelab123)"

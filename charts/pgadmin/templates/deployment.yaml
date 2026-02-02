@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pgadmin.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pgadmin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "pgadmin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "pgadmin.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              value: {{ .Values.config.defaultEmail | quote }}
+            - name: PGADMIN_DEFAULT_PASSWORD
+              value: {{ .Values.config.defaultPassword | quote }}
+          volumeMounts:
+            - name: servers-config
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory | quote }}
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.resources.limits.memory | quote }}
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /misc/ping
+              port: http
+            initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.periodSeconds }}
+            failureThreshold: {{ .Values.healthcheck.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /misc/ping
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: {{ .Values.healthcheck.failureThreshold }}
+          {{- end }}
+      volumes:
+        - name: servers-config
+          configMap:
+            name: {{ include "pgadmin.fullname" . }}-servers

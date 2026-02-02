@@ -47,6 +47,7 @@ That's it! Your homelab is running.
 - **Prometheus** - Metrics collection (port 30090)
 - **Uptime Kuma** - Uptime monitoring (port 30333)
 - **PostgreSQL** - Relational database (port 30432)
+- **pgAdmin** - PostgreSQL management UI (port 30433)
 - **MinIO** - Object storage (API port 30900, Console port 30901)
 - **Kafka** - Event streaming platform (port 30092)
 - **AKHQ** - Kafka management UI (port 30093)
@@ -72,6 +73,7 @@ kubectl get svc --all-namespaces
 - Grafana: http://localhost:30080
 - Prometheus: http://localhost:30090
 - Uptime Kuma: http://localhost:30333
+- pgAdmin: http://localhost:30433 (admin@homelab.dev / admin)
 - MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - AKHQ: http://localhost:30093 (Kafka UI)
 - Kafka UI: http://localhost:30094 (Kafka UI)
@@ -153,6 +155,7 @@ k3s-homelab/
 │
 ├── charts/                   # Helm charts
 │   ├── postgresql/           # PostgreSQL database
+│   ├── pgadmin/              # pgAdmin 4 (PostgreSQL UI)
 │   ├── minio/                # MinIO object storage
 │   ├── kafka/                # Confluent Kafka (KRaft)
 │   ├── akhq/                 # AKHQ Kafka management UI

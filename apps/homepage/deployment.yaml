@@ -96,6 +96,11 @@ data:
             icon: postgres.png
             href: http://localhost:30432
             description: PostgreSQL Database (port 30432)
+        - pgAdmin:
+            icon: pgadmin.png
+            href: http://localhost:30433
+            description: PostgreSQL Management UI
+            ping: http://localhost:30433
 
     - Automation:
         - n8n:
@@ -161,7 +166,7 @@ data:
         columns: 4
       Data:
         style: row
-        columns: 5
+        columns: 6
       Automation:
         style: row
         columns: 1

@@ -1,0 +1,46 @@
+# pgAdmin 4 Helm Chart - Default Values
+# PostgreSQL management UI
+
+# Container image settings
+image:
+  repository: dpage/pgadmin4
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30433
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# pgAdmin configuration
+config:
+  defaultEmail: "admin@homelab.dev"
+  defaultPassword: "admin"
+
+# PostgreSQL connection (pre-configured server)
+postgresql:
+  host: "postgresql-postgresql.postgresql.svc.cluster.local"
+  port: 5432
+  username: "postgres"
+  password: "postgres"
+  database: "homelab"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  failureThreshold: 6

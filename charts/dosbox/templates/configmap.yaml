@@ -208,34 +208,23 @@ data:
       </div>
 
       <script>
-        let ci = null;
-
         function launchGame(name, bundleUrl) {
           document.getElementById('game-list').style.display = 'none';
           document.getElementById('player-container').style.display = 'block';
           document.getElementById('game-title').textContent = name;
 
-          const dosEl = document.getElementById('dos');
+          var dosEl = document.getElementById('dos');
           dosEl.innerHTML = '';
 
-          Dos(dosEl, {
-            url: bundleUrl,
-          }).then(function(instance) {
-            ci = instance;
-          }).catch(function(err) {
-            dosEl.innerHTML = '<p style="color: red; padding: 20px;">Failed to load game: ' + err + '</p>';
-          });
+          Dos(dosEl, { url: bundleUrl });
         }
 
         function backToList() {
-          if (ci) {
-            try { ci.exit(); } catch(e) {}
-            ci = null;
-          }
-          const dosEl = document.getElementById('dos');
+          var dosEl = document.getElementById('dos');
           dosEl.innerHTML = '';
           document.getElementById('player-container').style.display = 'none';
           document.getElementById('game-list').style.display = 'block';
+          location.reload();
         }
       </script>
     </body>

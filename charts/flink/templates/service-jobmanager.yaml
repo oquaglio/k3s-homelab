@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flink.fullname" . }}-jobmanager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flink.labels" . | nindent 4 }}
+    component: jobmanager
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "flink.jobmanagerSelectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.jobmanager.rpcPort }}
+      targetPort: {{ .Values.jobmanager.rpcPort }}
+      name: rpc
+    - port: {{ .Values.jobmanager.webUiPort }}
+      targetPort: {{ .Values.jobmanager.webUiPort }}
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.webUiNodePort }}
+      {{- end }}
+      name: web-ui

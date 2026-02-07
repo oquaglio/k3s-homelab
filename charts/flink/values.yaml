@@ -1,0 +1,54 @@
+# Apache Flink Helm Chart - Default Values
+# Deploys JobManager + TaskManager with Kafka connector JARs pre-loaded
+
+# Container image settings
+image:
+  repository: flink
+  tag: "1.20"
+  pullPolicy: IfNotPresent
+
+# JobManager configuration
+jobmanager:
+  replicas: 1
+  rpcPort: 6123
+  webUiPort: 8081
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# TaskManager configuration
+taskmanager:
+  replicas: 1
+  rpcPort: 6122
+  taskSlots: 2
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# Service configuration
+service:
+  type: NodePort
+  webUiNodePort: 30081
+
+# Kafka integration
+# JARs are downloaded by an init container from Maven Central
+kafka:
+  enabled: true
+  bootstrapServers: "kafka-kafka.kafka.svc.cluster.local:9092"
+  # Flink Kafka connector version (format: connector_version-flink_version)
+  connectorVersion: "3.3.0-1.20"
+  kafkaClientsVersion: "3.7.1"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10

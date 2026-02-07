@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flink.fullname" . }}-taskmanager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flink.labels" . | nindent 4 }}
+    component: taskmanager
+spec:
+  replicas: {{ .Values.taskmanager.replicas }}
+  selector:
+    matchLabels:
+      {{- include "flink.taskmanagerSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "flink.taskmanagerSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.kafka.enabled }}
+      initContainers:
+        - name: download-kafka-jars
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              MAVEN=https://repo1.maven.org/maven2
+              CONN_V={{ .Values.kafka.connectorVersion }}
+              KAFKA_V={{ .Values.kafka.kafkaClientsVersion }}
+              wget -q -P /jars "${MAVEN}/org/apache/flink/flink-connector-kafka/${CONN_V}/flink-connector-kafka-${CONN_V}.jar"
+              wget -q -P /jars "${MAVEN}/org/apache/kafka/kafka-clients/${KAFKA_V}/kafka-clients-${KAFKA_V}.jar"
+          volumeMounts:
+            - name: kafka-jars
+              mountPath: /jars
+      {{- end }}
+      containers:
+        - name: taskmanager
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["taskmanager"]
+          ports:
+            - containerPort: {{ .Values.taskmanager.rpcPort }}
+              name: rpc
+          volumeMounts:
+            - name: flink-config
+              mountPath: /opt/flink/conf/flink-conf.yaml
+              subPath: flink-conf.yaml
+            {{- if .Values.kafka.enabled }}
+            - name: kafka-jars
+              mountPath: /opt/flink/lib/kafka
+            {{- end }}
+          resources:
+            requests:
+              memory: {{ .Values.taskmanager.resources.requests.memory | quote }}
+              cpu: {{ .Values.taskmanager.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.taskmanager.resources.limits.memory | quote }}
+              cpu: {{ .Values.taskmanager.resources.limits.cpu | quote }}
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.periodSeconds }}
+          readinessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          {{- end }}
+      volumes:
+        - name: flink-config
+          configMap:
+            name: {{ include "flink.fullname" . }}-config
+        {{- if .Values.kafka.enabled }}
+        - name: kafka-jars
+          emptyDir: {}
+        {{- end }}

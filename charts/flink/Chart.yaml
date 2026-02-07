@@ -1,0 +1,6 @@
+apiVersion: v2
+name: flink
+description: A Helm chart for Apache Flink stream processing with Kafka integration
+type: application
+version: 1.0.0
+appVersion: "1.20"

@@ -52,6 +52,7 @@ That's it! Your homelab is running.
 - **Kafka** - Event streaming platform (port 30092)
 - **AKHQ** - Kafka management UI (port 30093)
 - **Kafka UI** - Kafka management UI by Provectus (port 30094)
+- **Flink** - Stream processing with Kafka integration (UI port 30081)
 - **n8n** - Workflow automation (port 30555)
 - **DOSBox** - DOS Games Arcade in browser via js-dos (port 30086)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
@@ -78,6 +79,7 @@ kubectl get svc --all-namespaces
 - MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - AKHQ: http://localhost:30093 (Kafka UI)
 - Kafka UI: http://localhost:30094 (Kafka UI)
+- Flink Dashboard: http://localhost:30081 (stream processing)
 - n8n: http://localhost:30555
 - DOS Games: http://localhost:30086 (DOOM, Digger, Wolfenstein & more)
 - C64 Emulator: http://localhost:30064
@@ -162,6 +164,7 @@ k3s-homelab/
 │   ├── kafka/                # Confluent Kafka (KRaft)
 │   ├── akhq/                 # AKHQ Kafka management UI
 │   ├── kafka-ui/             # Kafka UI (Provectus)
+│   ├── flink/                # Apache Flink (stream processing)
 │   ├── n8n/                  # Workflow automation
 │   ├── dosbox/               # DOS Games Arcade (js-dos)
 │   ├── code-server/          # VS Code in browser

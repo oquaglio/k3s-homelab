@@ -71,6 +71,37 @@ data:
             description: Uptime Monitoring
             ping: http://localhost:30333
 
+    - Data:
+        - Kafka UI:
+            icon: mdi-apache-kafka
+            href: http://localhost:30094
+            description: Kafka Management (Provectus)
+            ping: http://localhost:30094
+        - AKHQ:
+            icon: mdi-apache-kafka
+            href: http://localhost:30093
+            description: Kafka Management (AKHQ)
+            ping: http://localhost:30093
+        - Spark:
+            icon: mdi-fire
+            href: http://localhost:30808
+            description: Spark Master Dashboard
+            ping: http://localhost:30808
+        - MinIO:
+            icon: minio.png
+            href: http://localhost:30901
+            description: Object Storage Console
+            ping: http://localhost:30901
+        - PostgreSQL:
+            icon: postgres.png
+            href: http://localhost:30432
+            description: PostgreSQL Database (port 30432)
+        - pgAdmin:
+            icon: pgadmin.png
+            href: http://localhost:30433
+            description: PostgreSQL Management UI
+            ping: http://localhost:30433
+
     - Automation:
         - n8n:
             icon: n8n.png
@@ -86,6 +117,11 @@ data:
             ping: http://localhost:30443
 
     - Fun:
+        - DOS Games:
+            icon: mdi-controller-classic
+            href: http://localhost:30086
+            description: DOOM, Digger, Wolfenstein & more!
+            ping: http://localhost:30086
         - C64 Emulator:
             icon: mdi-desktop-classic
             href: http://localhost:30064
@@ -133,6 +169,9 @@ data:
       Monitoring:
         style: row
         columns: 4
+      Data:
+        style: row
+        columns: 6
       Automation:
         style: row
         columns: 1
@@ -141,7 +180,7 @@ data:
         columns: 1
       Fun:
         style: row
-        columns: 1
+        columns: 2
       Cluster:
         style: row
         columns: 1

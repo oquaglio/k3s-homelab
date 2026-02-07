@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "akhq.fullname" . }}
+  name: {{ include "pgadmin.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "akhq.labels" . | nindent 4 }}
+    {{- include "pgadmin.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "akhq.selectorLabels" . | nindent 6 }}
+      {{- include "pgadmin.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "akhq.selectorLabels" . | nindent 8 }}
+        {{- include "pgadmin.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -22,10 +22,15 @@ spec:
           ports:
             - containerPort: {{ .Values.service.port }}
               name: http
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              value: {{ .Values.config.defaultEmail | quote }}
+            - name: PGADMIN_DEFAULT_PASSWORD
+              value: {{ .Values.config.defaultPassword | quote }}
           volumeMounts:
-            - name: config
-              mountPath: /app/application.yml
-              subPath: application.yml
+            - name: servers-config
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
           resources:
             requests:
               memory: {{ .Values.resources.requests.memory | quote }}
@@ -36,20 +41,20 @@ spec:
           {{- if .Values.healthcheck.enabled }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /misc/ping
               port: http
             initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthcheck.periodSeconds }}
             failureThreshold: {{ .Values.healthcheck.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /misc/ping
               port: http
             initialDelaySeconds: 30
             periodSeconds: 5
             failureThreshold: {{ .Values.healthcheck.failureThreshold }}
           {{- end }}
       volumes:
-        - name: config
+        - name: servers-config
           configMap:
-            name: {{ include "akhq.fullname" . }}-config
+            name: {{ include "pgadmin.fullname" . }}-servers

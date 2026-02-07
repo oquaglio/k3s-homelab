@@ -47,12 +47,14 @@ That's it! Your homelab is running.
 - **Prometheus** - Metrics collection (port 30090)
 - **Uptime Kuma** - Uptime monitoring (port 30333)
 - **PostgreSQL** - Relational database (port 30432)
+- **pgAdmin** - PostgreSQL management UI (port 30433)
 - **MinIO** - Object storage (API port 30900, Console port 30901)
 - **Kafka** - Event streaming platform (port 30092)
 - **AKHQ** - Kafka management UI (port 30093)
 - **Kafka UI** - Kafka management UI by Provectus (port 30094)
 - **Spark** - Distributed data processing with Kafka integration (UI port 30808)
 - **n8n** - Workflow automation (port 30555)
+- **DOSBox** - DOS Games Arcade in browser via js-dos (port 30086)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
 - **Code-Server** - VS Code in browser (port 30443)
 - **Traefik** - Ingress controller (pre-installed with K3s)
@@ -73,11 +75,13 @@ kubectl get svc --all-namespaces
 - Grafana: http://localhost:30080
 - Prometheus: http://localhost:30090
 - Uptime Kuma: http://localhost:30333
+- pgAdmin: http://localhost:30433 (admin@homelab.dev / admin)
 - MinIO Console: http://localhost:30901 (minioadmin/minioadmin)
 - AKHQ: http://localhost:30093 (Kafka UI)
 - Kafka UI: http://localhost:30094 (Kafka UI)
 - Spark Master: http://localhost:30808 (cluster dashboard)
 - n8n: http://localhost:30555
+- DOS Games: http://localhost:30086 (DOOM, Digger, Wolfenstein & more)
 - C64 Emulator: http://localhost:30064
 - Code-Server: http://localhost:30443
 
@@ -183,12 +187,14 @@ k3s-homelab/
 │
 ├── charts/                   # Helm charts
 │   ├── postgresql/           # PostgreSQL database
+│   ├── pgadmin/              # pgAdmin 4 (PostgreSQL UI)
 │   ├── minio/                # MinIO object storage
 │   ├── kafka/                # Confluent Kafka (KRaft)
 │   ├── akhq/                 # AKHQ Kafka management UI
 │   ├── kafka-ui/             # Kafka UI (Provectus)
 │   ├── spark/                # Apache Spark (master + worker)
 │   ├── n8n/                  # Workflow automation
+│   ├── dosbox/               # DOS Games Arcade (js-dos)
 │   ├── code-server/          # VS Code in browser
 │   └── c64-emulator/         # Commodore 64 emulator
 │

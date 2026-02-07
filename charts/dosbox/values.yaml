@@ -1,6 +1,6 @@
 # DOSBox Helm Chart - Default Values
 # Browser-based DOS gaming via js-dos
-# Games load from external CDN - no local storage needed
+# Init container downloads shareware games from archive.org and builds .jsdos bundles
 
 # Container image settings
 image:

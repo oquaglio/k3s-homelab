@@ -147,46 +147,32 @@ data:
           <p class="section-title">FREE GAMES (No license issues)</p>
           <div class="game-grid">
 
-            <div class="game-card" onclick="launchGame('Digger', 'https://v8.js-dos.com/bundles/digger.jsdos')">
+            <div class="game-card" onclick="launchGame('Digger', '/games/digger.jsdos')">
               <h3>Digger</h3>
               <div class="year">1983 - Windmill Software</div>
               <div class="desc">Classic mining arcade game. Collect gems while avoiding monsters. Arrow keys to move, F1 for fire.</div>
               <span class="license">Freeware</span>
             </div>
 
-            <div class="game-card" onclick="launchGame('DOOM (Shareware)', 'https://cdn.dos.zone/original/2X/2/2b27cee99e5d6e4ac2be76eb96b06eef1849ac15.jsdos')">
+            <div class="game-card" onclick="launchGame('DOOM (Shareware)', '/games/doom.jsdos')">
               <h3>DOOM</h3>
               <div class="year">1993 - id Software</div>
               <div class="desc">The legendary first-person shooter that defined a genre. Shareware Episode 1: Knee-Deep in the Dead.</div>
               <span class="license">Shareware</span>
             </div>
 
-            <div class="game-card" onclick="launchGame('Commander Keen 4 (Demo)', 'https://cdn.dos.zone/original/2X/5/5179dd46e52d8cdeca77e8b0c59c8a1dff24a4c7.jsdos')">
-              <h3>Commander Keen 4</h3>
-              <div class="year">1991 - id Software / Apogee</div>
-              <div class="desc">Goodbye Galaxy! Help Billy Blaze save the galaxy in this beloved side-scrolling platformer.</div>
-              <span class="license">Shareware</span>
-            </div>
-
-            <div class="game-card" onclick="launchGame('Prince of Persia', 'https://cdn.dos.zone/original/2X/b/b1652e9e57ef83d77f2c97edeb6d0d992c8a4133.jsdos')">
-              <h3>Prince of Persia</h3>
-              <div class="year">1990 - Broderbund</div>
-              <div class="desc">Jordan Mechner's groundbreaking cinematic platformer. Escape the dungeon and save the princess!</div>
-              <span class="license">Freeware</span>
-            </div>
-
-            <div class="game-card" onclick="launchGame('Wolfenstein 3D (Demo)', 'https://cdn.dos.zone/original/2X/a/a736763a8e51bdb8e2f30bccab17f1f12ec3d915.jsdos')">
+            <div class="game-card" onclick="launchGame('Wolfenstein 3D (Shareware)', '/games/wolf3d.jsdos')">
               <h3>Wolfenstein 3D</h3>
               <div class="year">1992 - id Software</div>
               <div class="desc">The grandfather of first-person shooters. Escape Castle Wolfenstein!</div>
               <span class="license">Shareware</span>
             </div>
 
-            <div class="game-card" onclick="launchGame('Oregon Trail', 'https://cdn.dos.zone/original/2X/9/94380d4e4d1feca5e13387ce3a023738e5e907f0.jsdos')">
-              <h3>The Oregon Trail</h3>
-              <div class="year">1990 - MECC</div>
-              <div class="desc">The legendary educational game. Lead your pioneer family across America to Oregon!</div>
-              <span class="license">Abandonware</span>
+            <div class="game-card" onclick="launchGame('Prince of Persia', '/games/prince.jsdos')">
+              <h3>Prince of Persia</h3>
+              <div class="year">1990 - Broderbund</div>
+              <div class="desc">Jordan Mechner's groundbreaking cinematic platformer. Escape the dungeon and save the princess!</div>
+              <span class="license">Freeware</span>
             </div>
 
           </div>

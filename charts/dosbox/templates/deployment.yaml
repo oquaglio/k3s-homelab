@@ -16,9 +16,66 @@ spec:
         {{- include "dosbox.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
-        - name: copy-html
-          image: busybox:latest
-          command: ['sh', '-c', 'cp /config-source/* /usr/share/nginx/html/']
+        - name: setup-games
+          image: alpine:latest
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache zip wget > /dev/null 2>&1
+              cp /config-source/* /usr/share/nginx/html/
+              mkdir -p /usr/share/nginx/html/games
+
+              echo "Downloading Digger bundle..."
+              wget -q -O /usr/share/nginx/html/games/digger.jsdos \
+                "https://v8.js-dos.com/bundles/digger.jsdos" || echo "WARN: Digger download failed"
+
+              echo "Building DOOM shareware bundle..."
+              WORKDIR=$(mktemp -d)
+              cd "$WORKDIR"
+              wget -q -O doom.zip "https://archive.org/download/DoomsharewareEpisode/doom.ZIP" && \
+              mkdir -p .jsdos && \
+              cat > .jsdos/dosbox.conf << 'CONF'
+              [autoexec]
+              mount c .
+              c:
+              DOOM.EXE
+              CONF
+              unzip -o doom.zip -d . > /dev/null 2>&1
+              zip -r /usr/share/nginx/html/games/doom.jsdos .jsdos/ *.EXE *.WAD *.wad *.exe > /dev/null 2>&1 || \
+              zip -r /usr/share/nginx/html/games/doom.jsdos . > /dev/null 2>&1
+              echo "DOOM bundle: $(ls -la /usr/share/nginx/html/games/doom.jsdos 2>/dev/null)"
+
+              echo "Building Wolfenstein 3D shareware bundle..."
+              cd $(mktemp -d)
+              wget -q -O wolf3d.zip "https://archive.org/download/wolf3dsw/wolf3dsw.zip" && \
+              mkdir -p .jsdos && \
+              cat > .jsdos/dosbox.conf << 'CONF'
+              [autoexec]
+              mount c .
+              c:
+              WOLF3D.EXE
+              CONF
+              unzip -o wolf3d.zip -d . > /dev/null 2>&1
+              zip -r /usr/share/nginx/html/games/wolf3d.jsdos . > /dev/null 2>&1
+              echo "Wolfenstein bundle: $(ls -la /usr/share/nginx/html/games/wolf3d.jsdos 2>/dev/null)"
+
+              echo "Building Prince of Persia bundle..."
+              cd $(mktemp -d)
+              wget -q -O prince.zip "https://archive.org/download/msdos_Prince_of_Persia_1990/Prince_of_Persia_1990.zip" && \
+              mkdir -p .jsdos && \
+              cat > .jsdos/dosbox.conf << 'CONF'
+              [autoexec]
+              mount c .
+              c:
+              PRINCE.EXE
+              CONF
+              unzip -o prince.zip -d . > /dev/null 2>&1
+              zip -r /usr/share/nginx/html/games/prince.jsdos . > /dev/null 2>&1
+              echo "Prince bundle: $(ls -la /usr/share/nginx/html/games/prince.jsdos 2>/dev/null)"
+
+              echo "All games ready:"
+              ls -la /usr/share/nginx/html/games/
           volumeMounts:
             - name: config-source
               mountPath: /config-source

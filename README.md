@@ -53,6 +53,7 @@ That's it! Your homelab is running.
 - **AKHQ** - Kafka management UI (port 30093)
 - **Kafka UI** - Kafka management UI by Provectus (port 30094)
 - **n8n** - Workflow automation (port 30555)
+- **DOSBox** - DOS Games Arcade in browser via js-dos (port 30086)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
 - **Code-Server** - VS Code in browser (port 30443)
 - **Traefik** - Ingress controller (pre-installed with K3s)
@@ -78,6 +79,7 @@ kubectl get svc --all-namespaces
 - AKHQ: http://localhost:30093 (Kafka UI)
 - Kafka UI: http://localhost:30094 (Kafka UI)
 - n8n: http://localhost:30555
+- DOS Games: http://localhost:30086 (DOOM, Digger, Wolfenstein & more)
 - C64 Emulator: http://localhost:30064
 - Code-Server: http://localhost:30443
 
@@ -161,6 +163,7 @@ k3s-homelab/
 │   ├── akhq/                 # AKHQ Kafka management UI
 │   ├── kafka-ui/             # Kafka UI (Provectus)
 │   ├── n8n/                  # Workflow automation
+│   ├── dosbox/               # DOS Games Arcade (js-dos)
 │   ├── code-server/          # VS Code in browser
 │   └── c64-emulator/         # Commodore 64 emulator
 │

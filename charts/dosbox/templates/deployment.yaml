@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dosbox.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "dosbox.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "dosbox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "dosbox.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: copy-html
+          image: busybox:latest
+          command: ['sh', '-c', 'cp /config-source/* /usr/share/nginx/html/']
+          volumeMounts:
+            - name: config-source
+              mountPath: /config-source
+            - name: html
+              mountPath: /usr/share/nginx/html
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory | quote }}
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ .Values.resources.limits.memory | quote }}
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: {{ .Values.healthcheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- end }}
+      volumes:
+        - name: config-source
+          configMap:
+            name: {{ include "dosbox.fullname" . }}-html
+        - name: html
+          emptyDir: {}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dosbox
+description: A Helm chart for browser-based DOS gaming via js-dos
+type: application
+version: 1.0.0
+appVersion: "8.xx"

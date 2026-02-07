@@ -117,6 +117,11 @@ data:
             ping: http://localhost:30443
 
     - Fun:
+        - DOS Games:
+            icon: mdi-controller-classic
+            href: http://localhost:30086
+            description: DOOM, Digger, Wolfenstein & more!
+            ping: http://localhost:30086
         - C64 Emulator:
             icon: mdi-desktop-classic
             href: http://localhost:30064
@@ -175,7 +180,7 @@ data:
         columns: 1
       Fun:
         style: row
-        columns: 1
+        columns: 2
       Cluster:
         style: row
         columns: 1

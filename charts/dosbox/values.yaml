@@ -1,0 +1,33 @@
+# DOSBox Helm Chart - Default Values
+# Browser-based DOS gaming via js-dos
+# Games load from external CDN - no local storage needed
+
+# Container image settings
+image:
+  repository: nginx
+  tag: alpine
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicas: 1
+
+# Service configuration
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30086
+
+# Resource limits
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "200m"
+
+# Health checks
+healthcheck:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10

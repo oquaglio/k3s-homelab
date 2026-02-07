@@ -26,6 +26,7 @@ fi
 
 echo -e "${YELLOW}Step 1: Deploying Homepage (Dashboard)...${NC}"
 kubectl apply -f apps/homepage/deployment.yaml
+kubectl rollout restart deployment homepage 2>/dev/null || true
 echo "Waiting for Homepage to be ready..."
 kubectl wait --for=condition=ready pod -l app=homepage --timeout=120s || echo -e "${YELLOW}Warning: Homepage pods may still be starting${NC}"
 echo -e "${GREEN}✓ Homepage deployed${NC}"
@@ -160,7 +161,15 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 13: Deploying C64 Emulator (for fun!)...${NC}"
+echo -e "${YELLOW}Step 13: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
+if helm upgrade --install dosbox ./charts/dosbox --namespace default --wait --timeout 60s; then
+  echo -e "${GREEN}✓ DOSBox deployed (Helm)${NC}"
+else
+  echo -e "${RED}✗ Failed to deploy DOSBox${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}Step 15: Deploying C64 Emulator (for fun!)...${NC}"
 if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 else
@@ -168,7 +177,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 14: Deploying Code-Server (VS Code in browser)...${NC}"
+echo -e "${YELLOW}Step 16: Deploying Code-Server (VS Code in browser)...${NC}"
 if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
   echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
 else
@@ -204,6 +213,7 @@ echo "  • Kafka:       localhost:30092 (bootstrap server)"
 echo "  • AKHQ:       http://localhost:30093 (Kafka UI)"
 echo "  • Kafka UI:   http://localhost:30094 (Kafka UI)"
 echo "  • n8n:         http://localhost:30555"
+echo "  • DOSBox:      http://localhost:30086 (DOS Games Arcade!)"
 echo "  • C64:         http://localhost:30064 (retro fun!)"
 echo "  • Code-Server: http://localhost:30443 (password: homelab123)"
 echo ""

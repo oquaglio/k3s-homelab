@@ -1,4 +1,4 @@
-FROM flink:1.20
+FROM docker.io/library/flink:1.20
 
 # Download Kafka connector JARs at build time so they're baked into the image
 ARG FLINK_KAFKA_CONNECTOR_VERSION=3.3.0-1.20

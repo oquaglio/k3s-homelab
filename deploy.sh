@@ -166,7 +166,13 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 14: Deploying Flink (Stream Processing) via Helm...${NC}"
+echo -e "${YELLOW}Step 14: Building Flink image with Kafka connectors...${NC}"
+podman build -t flink-kafka:latest ./charts/flink/docker/ -q
+podman save flink-kafka:latest | sudo k3s ctr images import -
+echo -e "${GREEN}✓ Flink image built and imported into k3s${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 15: Deploying Flink (Stream Processing) via Helm...${NC}"
 if helm upgrade --install flink ./charts/flink --namespace flink --create-namespace --wait --timeout 180s; then
   echo -e "${GREEN}✓ Flink deployed (Helm)${NC}"
 else
@@ -174,7 +180,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 15: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
+echo -e "${YELLOW}Step 16: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
 if helm upgrade --install stock-analyzer ./charts/stock-analyzer --namespace stock-analyzer --create-namespace --wait --timeout 60s; then
   echo -e "${GREEN}✓ Stock Analyzer deployed (Helm) - runs daily at 10 PM UTC${NC}"
 else
@@ -182,7 +188,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 16: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
+echo -e "${YELLOW}Step 17: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
 if helm upgrade --install dosbox ./charts/dosbox --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ DOSBox deployed (Helm)${NC}"
 else
@@ -190,7 +196,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 17: Deploying C64 Emulator (for fun!)...${NC}"
+echo -e "${YELLOW}Step 18: Deploying C64 Emulator (for fun!)...${NC}"
 if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 else
@@ -198,7 +204,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 18: Deploying Code-Server (VS Code in browser)...${NC}"
+echo -e "${YELLOW}Step 19: Deploying Code-Server (VS Code in browser)...${NC}"
 if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
   echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
 else

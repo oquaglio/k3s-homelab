@@ -2,9 +2,10 @@
 # Deploys JobManager + TaskManager with Kafka connector JARs pre-loaded
 
 # Container image settings
+# Built from charts/flink/docker/Dockerfile (flink:1.20 + Kafka JARs)
 image:
-  repository: flink
-  tag: "1.20"
+  repository: flink-kafka
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 # JobManager configuration
@@ -39,13 +40,8 @@ service:
   webUiNodePort: 30081
 
 # Kafka integration
-# JARs are downloaded by an init container from Maven Central
 kafka:
-  enabled: true
   bootstrapServers: "kafka-kafka.kafka.svc.cluster.local:9092"
-  # Flink Kafka connector version (format: connector_version-flink_version)
-  connectorVersion: "3.3.0-1.20"
-  kafkaClientsVersion: "3.7.1"
 
 # Health checks
 healthcheck:

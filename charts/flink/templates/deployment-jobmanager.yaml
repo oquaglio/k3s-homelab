@@ -16,25 +16,6 @@ spec:
       labels:
         {{- include "flink.jobmanagerSelectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.kafka.enabled }}
-      initContainers:
-        - name: download-kafka-jars
-          image: busybox:latest
-          command:
-            - sh
-            - -c
-            - |
-              MAVEN=https://repo1.maven.org/maven2
-              CONN_V={{ .Values.kafka.connectorVersion }}
-              KAFKA_V={{ .Values.kafka.kafkaClientsVersion }}
-              wget -q -P /jars "${MAVEN}/org/apache/flink/flink-connector-kafka/${CONN_V}/flink-connector-kafka-${CONN_V}.jar"
-              wget -q -P /jars "${MAVEN}/org/apache/kafka/kafka-clients/${KAFKA_V}/kafka-clients-${KAFKA_V}.jar"
-              echo "Downloaded Kafka connector JARs:"
-              ls -la /jars/
-          volumeMounts:
-            - name: kafka-jars
-              mountPath: /jars
-      {{- end }}
       containers:
         - name: jobmanager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -49,10 +30,6 @@ spec:
             - name: flink-config
               mountPath: /opt/flink/conf/flink-conf.yaml
               subPath: flink-conf.yaml
-            {{- if .Values.kafka.enabled }}
-            - name: kafka-jars
-              mountPath: /opt/flink/lib/kafka
-            {{- end }}
           resources:
             requests:
               memory: {{ .Values.jobmanager.resources.requests.memory | quote }}
@@ -78,7 +55,3 @@ spec:
         - name: flink-config
           configMap:
             name: {{ include "flink.fullname" . }}-config
-        {{- if .Values.kafka.enabled }}
-        - name: kafka-jars
-          emptyDir: {}
-        {{- end }}

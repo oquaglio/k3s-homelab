@@ -37,85 +37,91 @@ helm uninstall dosbox --namespace default 2>/dev/null || true
 echo -e "${GREEN}✓ DOSBox deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Deleting n8n (Helm)...${NC}"
+echo -e "${YELLOW}Step 4: Deleting Stock Analyzer (Helm)...${NC}"
+helm uninstall stock-analyzer --namespace stock-analyzer 2>/dev/null || true
+echo -e "${GREEN}✓ Stock Analyzer deleted${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 5: Deleting n8n (Helm)...${NC}"
 helm uninstall n8n --namespace n8n 2>/dev/null || true
 echo -e "${GREEN}✓ n8n deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 5: Deleting Flink (Helm)...${NC}"
+echo -e "${YELLOW}Step 6: Deleting Flink (Helm)...${NC}"
 helm uninstall flink --namespace flink 2>/dev/null || true
 echo -e "${GREEN}✓ Flink deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deleting Kafka UI (Helm)...${NC}"
+echo -e "${YELLOW}Step 7: Deleting Kafka UI (Helm)...${NC}"
 helm uninstall kafka-ui --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ Kafka UI deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 7: Deleting AKHQ (Helm)...${NC}"
+echo -e "${YELLOW}Step 8: Deleting AKHQ (Helm)...${NC}"
 helm uninstall akhq --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ AKHQ deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 8: Deleting Kafka (Helm)...${NC}"
+echo -e "${YELLOW}Step 9: Deleting Kafka (Helm)...${NC}"
 helm uninstall kafka --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ Kafka deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 9: Deleting MinIO (Helm)...${NC}"
+echo -e "${YELLOW}Step 10: Deleting MinIO (Helm)...${NC}"
 helm uninstall minio --namespace minio 2>/dev/null || true
 echo -e "${GREEN}✓ MinIO deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 10: Deleting pgAdmin (Helm)...${NC}"
+echo -e "${YELLOW}Step 11: Deleting pgAdmin (Helm)...${NC}"
 helm uninstall pgadmin --namespace postgresql 2>/dev/null || true
 echo -e "${GREEN}✓ pgAdmin deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 11: Deleting PostgreSQL (Helm)...${NC}"
+echo -e "${YELLOW}Step 12: Deleting PostgreSQL (Helm)...${NC}"
 helm uninstall postgresql --namespace postgresql 2>/dev/null || true
 echo -e "${GREEN}✓ PostgreSQL deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 12: Deleting Uptime Kuma...${NC}"
+echo -e "${YELLOW}Step 13: Deleting Uptime Kuma...${NC}"
 kubectl delete -f monitoring/uptime-kuma/uptime-kuma.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Uptime Kuma deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 13: Deleting Kube Prometheus Stack...${NC}"
+echo -e "${YELLOW}Step 14: Deleting Kube Prometheus Stack...${NC}"
 kubectl delete -f monitoring/kube-prometheus-stack/manifests.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kube Prometheus Stack deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 14: Deleting Kubernetes Dashboard...${NC}"
+echo -e "${YELLOW}Step 15: Deleting Kubernetes Dashboard...${NC}"
 kubectl delete -f monitoring/kubernetes-dashboard/admin-user.yaml --ignore-not-found=true
 kubectl delete -f monitoring/kubernetes-dashboard/dashboard.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kubernetes Dashboard deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 15: Deleting Portainer...${NC}"
+echo -e "${YELLOW}Step 16: Deleting Portainer...${NC}"
 kubectl delete -f monitoring/portainer/portainer.yaml --ignore-not-found=true
 kubectl delete namespace portainer --ignore-not-found=true
 echo -e "${GREEN}✓ Portainer deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 16: Deleting Homepage...${NC}"
+echo -e "${YELLOW}Step 17: Deleting Homepage...${NC}"
 kubectl delete -f apps/homepage/deployment.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Homepage deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 17: Cleaning up secrets...${NC}"
+echo -e "${YELLOW}Step 18: Cleaning up secrets...${NC}"
 kubectl delete secret portainer-admin-password -n portainer --ignore-not-found=true
 kubectl delete secret kube-prometheus-stack-grafana -n monitoring --ignore-not-found=true
 echo -e "${GREEN}✓ Secrets deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 18: Deleting namespaces...${NC}"
+echo -e "${YELLOW}Step 19: Deleting namespaces...${NC}"
 kubectl delete namespace flink --ignore-not-found=true
 kubectl delete namespace kafka --ignore-not-found=true
 kubectl delete namespace minio --ignore-not-found=true
 kubectl delete namespace postgresql --ignore-not-found=true
 kubectl delete namespace n8n --ignore-not-found=true
+kubectl delete namespace stock-analyzer --ignore-not-found=true
 kubectl delete -f monitoring/kube-prometheus-stack/namespace.yaml --ignore-not-found=true
 kubectl delete -f monitoring/portainer/namespace.yaml --ignore-not-found=true
 kubectl delete -f monitoring/kubernetes-dashboard/namespace.yaml --ignore-not-found=true

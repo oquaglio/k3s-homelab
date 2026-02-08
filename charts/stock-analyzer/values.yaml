@@ -1,0 +1,75 @@
+# Stock Analyzer - Default Values
+# Fetches stock fundamentals, calculates value investing metrics,
+# and stores results in PostgreSQL for Grafana dashboards.
+
+image:
+  repository: python
+  tag: "3.12-slim"
+  pullPolicy: IfNotPresent
+
+# CronJob schedule (default: 10 PM UTC weekdays = after US market close)
+schedule: "0 22 * * 1-5"
+
+# Delay between API calls per ticker (seconds) - be respectful to yfinance
+delaySeconds: "1.5"
+
+# PostgreSQL connection (uses existing homelab PostgreSQL)
+postgresql:
+  host: "postgresql-postgresql.postgresql.svc.cluster.local"
+  port: "5432"
+  database: "homelab"
+  username: "postgres"
+  password: "postgres"
+
+# Tickers to track - edit this list to your liking
+# Covers major sectors: tech, finance, healthcare, consumer, industrial, energy
+tickers:
+  - AAPL
+  - MSFT
+  - GOOGL
+  - META
+  - NVDA
+  - AMZN
+  - JPM
+  - BRK-B
+  - V
+  - MA
+  - JNJ
+  - UNH
+  - PFE
+  - ABBV
+  - WMT
+  - KO
+  - PG
+  - MCD
+  - HD
+  - COST
+  - CAT
+  - HON
+  - GE
+  - UNP
+  - XOM
+  - CVX
+  - DIS
+  - NFLX
+  - CRM
+  - ADBE
+
+# Resource limits for the CronJob pod
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Composite score weights (must sum to 1.0)
+# Adjust these to tune your "magic number"
+weights:
+  magicFormula: 0.30    # ROIC + Earnings Yield combined rank
+  piotroski: 0.25       # Piotroski F-Score (financial strength)
+  fcfYield: 0.15        # Free Cash Flow Yield
+  debtEquity: 0.10      # Debt/Equity (lower = better)
+  revenueGrowth: 0.10   # Revenue Growth
+  grossMargin: 0.10     # Gross Margin

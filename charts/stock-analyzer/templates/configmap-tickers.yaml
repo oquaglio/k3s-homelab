@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stock-analyzer.fullname" . }}-tickers
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stock-analyzer.labels" . | nindent 4 }}
+data:
+  tickers.txt: |
+    # Stock tickers to analyze (one per line, # for comments)
+    {{- range .Values.tickers }}
+    {{ . }}
+    {{- end }}

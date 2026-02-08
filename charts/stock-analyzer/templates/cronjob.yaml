@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "stock-analyzer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stock-analyzer.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            {{- include "stock-analyzer.selectorLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: stock-analyzer
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+                - sh
+                - -c
+                - |
+                  pip install --quiet --no-cache-dir yfinance pandas sqlalchemy psycopg2-binary numpy && \
+                  python /scripts/analyzer.py
+              env:
+                - name: DB_HOST
+                  value: {{ .Values.postgresql.host | quote }}
+                - name: DB_PORT
+                  value: {{ .Values.postgresql.port | quote }}
+                - name: DB_NAME
+                  value: {{ .Values.postgresql.database | quote }}
+                - name: DB_USER
+                  value: {{ .Values.postgresql.username | quote }}
+                - name: DB_PASS
+                  value: {{ .Values.postgresql.password | quote }}
+                - name: TICKERS_FILE
+                  value: /config/tickers.txt
+                - name: DELAY_SECONDS
+                  value: {{ .Values.delaySeconds | quote }}
+                - name: W_MAGIC_FORMULA
+                  value: {{ .Values.weights.magicFormula | quote }}
+                - name: W_PIOTROSKI
+                  value: {{ .Values.weights.piotroski | quote }}
+                - name: W_FCF_YIELD
+                  value: {{ .Values.weights.fcfYield | quote }}
+                - name: W_DEBT_EQUITY
+                  value: {{ .Values.weights.debtEquity | quote }}
+                - name: W_REVENUE_GROWTH
+                  value: {{ .Values.weights.revenueGrowth | quote }}
+                - name: W_GROSS_MARGIN
+                  value: {{ .Values.weights.grossMargin | quote }}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                - name: tickers
+                  mountPath: /config
+              resources:
+                requests:
+                  memory: {{ .Values.resources.requests.memory | quote }}
+                  cpu: {{ .Values.resources.requests.cpu | quote }}
+                limits:
+                  memory: {{ .Values.resources.limits.memory | quote }}
+                  cpu: {{ .Values.resources.limits.cpu | quote }}
+          volumes:
+            - name: scripts
+              configMap:
+                name: {{ include "stock-analyzer.fullname" . }}-script
+            - name: tickers
+              configMap:
+                name: {{ include "stock-analyzer.fullname" . }}-tickers

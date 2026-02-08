@@ -1,0 +1,6 @@
+apiVersion: v2
+name: stock-analyzer
+description: A Helm chart for stock fundamental analysis with Kafka/PostgreSQL/Grafana
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

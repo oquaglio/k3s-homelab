@@ -53,6 +53,7 @@ That's it! Your homelab is running.
 - **AKHQ** - Kafka management UI (port 30093)
 - **Kafka UI** - Kafka management UI by Provectus (port 30094)
 - **Flink** - Stream processing with Kafka integration (UI port 30081)
+- **Stock Analyzer** - Value investing metrics pipeline (CronJob, data in Grafana)
 - **n8n** - Workflow automation (port 30555)
 - **DOSBox** - DOS Games Arcade in browser via js-dos (port 30086)
 - **C64 Emulator** - Commodore 64 in K8s (port 30064)
@@ -89,6 +90,25 @@ kubectl get svc --all-namespaces
 - PostgreSQL: `psql -h localhost -p 30432 -U postgres -d homelab`
 - MinIO (S3 API): http://localhost:30900
 - Kafka: `kafka-console-producer --bootstrap-server localhost:30092 --topic test`
+
+**Stock Analyzer:**
+
+Runs daily at 10 PM UTC (after US market close). Data goes into PostgreSQL and can be viewed in Grafana.
+```bash
+# Trigger a manual run
+kubectl create job --from=cronjob/stock-analyzer-stock-analyzer manual-run
+
+# Check job logs
+kubectl logs job/manual-run -f
+
+# Edit the ticker list in values.yaml, then redeploy
+helm upgrade --install stock-analyzer ./charts/stock-analyzer --namespace default
+
+# View results in psql
+kubectl exec -it deploy/postgresql-postgresql -n postgresql -- \
+  psql -U postgres -d homelab -c "SELECT ticker, composite_score, signal FROM stock_metrics WHERE calc_date = CURRENT_DATE ORDER BY composite_score DESC"
+```
+To visualize in Grafana: add PostgreSQL as a datasource (host: `postgresql-postgresql.postgresql.svc.cluster.local:5432`, db: `homelab`, user: `postgres`).
 
 **Kubernetes Dashboard:**
 ```bash
@@ -165,6 +185,7 @@ k3s-homelab/
 │   ├── akhq/                 # AKHQ Kafka management UI
 │   ├── kafka-ui/             # Kafka UI (Provectus)
 │   ├── flink/                # Apache Flink (stream processing)
+│   ├── stock-analyzer/       # Stock metrics CronJob (yfinance → PostgreSQL → Grafana)
 │   ├── n8n/                  # Workflow automation
 │   ├── dosbox/               # DOS Games Arcade (js-dos)
 │   ├── code-server/          # VS Code in browser

@@ -98,14 +98,19 @@ fi
 kubectl delete pod kube-prometheus-stack-grafana-test -n monitoring 2>/dev/null || true
 echo ""
 
-echo -e "${YELLOW}Step 5: Deploying Uptime Kuma...${NC}"
+echo -e "${YELLOW}Step 5: Deploying Grafana Dashboards...${NC}"
+kubectl apply -f monitoring/grafana-dashboards/
+echo -e "${GREEN}✓ Grafana dashboards deployed${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 6: Deploying Uptime Kuma...${NC}"
 kubectl apply -f monitoring/uptime-kuma/uptime-kuma.yaml
 echo "Waiting for Uptime Kuma to be ready..."
 kubectl wait --for=condition=ready pod -l app=uptime-kuma -n monitoring --timeout=120s || echo -e "${YELLOW}Warning: Uptime Kuma pods may still be starting${NC}"
 echo -e "${GREEN}✓ Uptime Kuma deployed${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deploying PostgreSQL via Helm...${NC}"
+echo -e "${YELLOW}Step 7: Deploying PostgreSQL via Helm...${NC}"
 if helm upgrade --install postgresql ./charts/postgresql --namespace postgresql --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ PostgreSQL deployed (Helm)${NC}"
 else
@@ -113,7 +118,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 7: Deploying pgAdmin (PostgreSQL UI) via Helm...${NC}"
+echo -e "${YELLOW}Step 8: Deploying pgAdmin (PostgreSQL UI) via Helm...${NC}"
 if helm upgrade --install pgadmin ./charts/pgadmin --namespace postgresql --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ pgAdmin deployed (Helm)${NC}"
 else
@@ -121,7 +126,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 8: Deploying MinIO (Object Storage) via Helm...${NC}"
+echo -e "${YELLOW}Step 9: Deploying MinIO (Object Storage) via Helm...${NC}"
 if helm upgrade --install minio ./charts/minio --namespace minio --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ MinIO deployed (Helm)${NC}"
 else
@@ -129,7 +134,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 9: Deploying Kafka (Event Streaming) via Helm...${NC}"
+echo -e "${YELLOW}Step 10: Deploying Kafka (Event Streaming) via Helm...${NC}"
 if helm upgrade --install kafka ./charts/kafka --namespace kafka --create-namespace --wait --timeout 180s; then
   echo -e "${GREEN}✓ Kafka deployed (Helm)${NC}"
 else
@@ -137,7 +142,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 10: Deploying AKHQ (Kafka UI) via Helm...${NC}"
+echo -e "${YELLOW}Step 11: Deploying AKHQ (Kafka UI) via Helm...${NC}"
 if helm upgrade --install akhq ./charts/akhq --namespace kafka --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ AKHQ deployed (Helm)${NC}"
 else
@@ -145,7 +150,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 11: Deploying Kafka UI (Provectus) via Helm...${NC}"
+echo -e "${YELLOW}Step 12: Deploying Kafka UI (Provectus) via Helm...${NC}"
 if helm upgrade --install kafka-ui ./charts/kafka-ui --namespace kafka --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ Kafka UI deployed (Helm)${NC}"
 else
@@ -153,7 +158,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 12: Deploying n8n (Workflow Automation) via Helm...${NC}"
+echo -e "${YELLOW}Step 13: Deploying n8n (Workflow Automation) via Helm...${NC}"
 if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 else
@@ -161,7 +166,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 13: Deploying Flink (Stream Processing) via Helm...${NC}"
+echo -e "${YELLOW}Step 14: Deploying Flink (Stream Processing) via Helm...${NC}"
 if helm upgrade --install flink ./charts/flink --namespace flink --create-namespace --wait --timeout 180s; then
   echo -e "${GREEN}✓ Flink deployed (Helm)${NC}"
 else
@@ -169,7 +174,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 14: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
+echo -e "${YELLOW}Step 15: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
 if helm upgrade --install stock-analyzer ./charts/stock-analyzer --namespace stock-analyzer --create-namespace --wait --timeout 60s; then
   echo -e "${GREEN}✓ Stock Analyzer deployed (Helm) - runs daily at 10 PM UTC${NC}"
 else
@@ -177,7 +182,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 15: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
+echo -e "${YELLOW}Step 16: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
 if helm upgrade --install dosbox ./charts/dosbox --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ DOSBox deployed (Helm)${NC}"
 else
@@ -210,7 +215,6 @@ echo "  kubectl get pods --all-namespaces"
 echo ""
 echo "Access your services:"
 echo ""
-echo ""
 echo -e "${GREEN}Homepage Dashboard: http://localhost:30000${NC}"
 echo ""
 echo "All services are accessible from the Homepage dashboard!"
@@ -221,7 +225,7 @@ echo "  • Portainer:   http://localhost:30777"
 echo "  • Grafana:     http://localhost:30080"
 echo "  • Prometheus:  http://localhost:30090"
 echo "  • Uptime Kuma: http://localhost:30333"
-echo "  • PostgreSQL:  localhost:30432 (user: postgres, db: homelab)"
+echo "  • PostgreSQL:  localhost:30432 (user: postgres, pass: postgres, db: homelab)"
 echo "  • pgAdmin:    http://localhost:30433 (admin@homelab.dev / admin)"
 echo "  • MinIO API:   http://localhost:30900 (minioadmin/minioadmin)"
 echo "  • MinIO UI:    http://localhost:30901"

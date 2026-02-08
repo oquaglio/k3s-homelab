@@ -1,0 +1,411 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-stock-analyzer
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  stock-analyzer.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "Overview",
+          "type": "row"
+        },
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Stocks Tracked",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"Total\" FROM stock_metrics WHERE calc_date = (SELECT MAX(calc_date) FROM stock_metrics)",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "text" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "BUY Signals",
+          "gridPos": { "h": 4, "w": 5, "x": 4, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"BUY\" FROM stock_metrics WHERE calc_date = (SELECT MAX(calc_date) FROM stock_metrics) AND signal = 'BUY'",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "green" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "HOLD Signals",
+          "gridPos": { "h": 4, "w": 5, "x": 9, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"HOLD\" FROM stock_metrics WHERE calc_date = (SELECT MAX(calc_date) FROM stock_metrics) AND signal = 'HOLD'",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "yellow" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "SELL Signals",
+          "gridPos": { "h": 4, "w": 5, "x": 14, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"SELL\" FROM stock_metrics WHERE calc_date = (SELECT MAX(calc_date) FROM stock_metrics) AND signal = 'SELL'",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "red" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "type": "stat",
+          "title": "Avg Composite Score",
+          "gridPos": { "h": 4, "w": 5, "x": 19, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(AVG(composite_score), 1) AS \"Avg Score\" FROM stock_metrics WHERE calc_date = (SELECT MAX(calc_date) FROM stock_metrics)",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "blue" },
+              "unit": "none",
+              "decimals": 1
+            },
+            "overrides": []
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "id": 101,
+          "title": "Stock Rankings",
+          "type": "row"
+        },
+        {
+          "id": 10,
+          "type": "table",
+          "title": "All Stocks - Ranked by Composite Score",
+          "gridPos": { "h": 14, "w": 24, "x": 0, "y": 6 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT m.ticker AS \"Ticker\", s.company_name AS \"Company\", s.sector AS \"Sector\", ROUND(m.composite_score, 1) AS \"Score\", m.signal AS \"Signal\", m.magic_formula_rank AS \"MF Rank\", m.piotroski_score AS \"F-Score\", ROUND(m.roic * 100, 1) AS \"ROIC %\", ROUND(m.earnings_yield * 100, 1) AS \"EY %\", ROUND(m.trailing_pe, 1) AS \"P/E\", ROUND(m.price_to_book, 1) AS \"P/B\", ROUND(m.debt_to_equity, 1) AS \"D/E\", ROUND(m.revenue_growth * 100, 1) AS \"Rev Growth %\", ROUND(m.gross_margin * 100, 1) AS \"Gross Margin %\", ROUND(m.price, 2) AS \"Price\" FROM stock_metrics m JOIN stocks s ON m.ticker = s.ticker WHERE m.calc_date = (SELECT MAX(calc_date) FROM stock_metrics) ORDER BY m.composite_score DESC",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Signal" },
+                "properties": [{
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-background", "mode": "basic" }
+                }, {
+                  "id": "mappings",
+                  "value": [
+                    { "type": "value", "options": { "BUY":  { "color": "dark-green", "index": 0, "text": "BUY" } } },
+                    { "type": "value", "options": { "HOLD": { "color": "dark-yellow", "index": 1, "text": "HOLD" } } },
+                    { "type": "value", "options": { "SELL": { "color": "dark-red", "index": 2, "text": "SELL" } } }
+                  ]
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Score" },
+                "properties": [{
+                  "id": "custom.cellOptions",
+                  "value": {
+                    "type": "gauge",
+                    "mode": "gradient",
+                    "valueDisplayMode": "text"
+                  }
+                }, {
+                  "id": "min", "value": 0
+                }, {
+                  "id": "max", "value": 100
+                }, {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "yellow", "value": 30 },
+                      { "color": "green", "value": 70 }
+                    ]
+                  }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "F-Score" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "yellow", "value": 5 },
+                      { "color": "green", "value": 8 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              }
+            ]
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+          "id": 102,
+          "title": "Analysis",
+          "type": "row"
+        },
+        {
+          "id": 20,
+          "type": "barchart",
+          "title": "Top 10 Stocks by Composite Score",
+          "gridPos": { "h": 10, "w": 12, "x": 0, "y": 21 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT m.ticker AS \"Ticker\", ROUND(m.composite_score, 1) AS \"Score\" FROM stock_metrics m WHERE m.calc_date = (SELECT MAX(calc_date) FROM stock_metrics) ORDER BY m.composite_score DESC LIMIT 10",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always",
+            "barWidth": 0.7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 30 },
+                  { "color": "green", "value": 70 }
+                ]
+              },
+              "min": 0,
+              "max": 100
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 21,
+          "type": "barchart",
+          "title": "Average Score by Sector",
+          "gridPos": { "h": 10, "w": 12, "x": 12, "y": 21 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT s.sector AS \"Sector\", ROUND(AVG(m.composite_score), 1) AS \"Avg Score\" FROM stock_metrics m JOIN stocks s ON m.ticker = s.ticker WHERE m.calc_date = (SELECT MAX(calc_date) FROM stock_metrics) GROUP BY s.sector ORDER BY \"Avg Score\" DESC",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always",
+            "barWidth": 0.7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "blue" },
+              "min": 0,
+              "max": 100
+            },
+            "overrides": []
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+          "id": 103,
+          "title": "Trends",
+          "type": "row"
+        },
+        {
+          "id": 30,
+          "type": "timeseries",
+          "title": "Composite Score Over Time - $ticker",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 32 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "time_series",
+            "rawQuery": true,
+            "rawSql": "SELECT calc_date AS time, composite_score AS \"Score\" FROM stock_metrics WHERE ticker = '$ticker' ORDER BY calc_date",
+            "refId": "A"
+          }],
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "pointSize": 6,
+                "showPoints": "always"
+              },
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 30 },
+                  { "color": "green", "value": 70 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 31,
+          "type": "timeseries",
+          "title": "Price Over Time - $ticker",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 41 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "time_series",
+            "rawQuery": true,
+            "rawSql": "SELECT calc_date AS time, price AS \"Price\" FROM stock_metrics WHERE ticker = '$ticker' ORDER BY calc_date",
+            "refId": "A"
+          }],
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "pointSize": 6,
+                "showPoints": "always"
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          }
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["stock-analyzer", "homelab"],
+      "templating": {
+        "list": [
+          {
+            "current": { "text": "AAPL", "value": "AAPL" },
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "definition": "SELECT DISTINCT ticker FROM stocks ORDER BY ticker",
+            "name": "ticker",
+            "label": "Ticker",
+            "query": "SELECT DISTINCT ticker FROM stocks ORDER BY ticker",
+            "refresh": 1,
+            "type": "query",
+            "sort": 1
+          }
+        ]
+      },
+      "time": { "from": "now-90d", "to": "now" },
+      "timezone": "",
+      "title": "Stock Analyzer",
+      "uid": "stock-analyzer",
+      "version": 1
+    }

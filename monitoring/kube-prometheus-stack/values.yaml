@@ -7,6 +7,7 @@ grafana:
   additionalDataSources:
     - name: PostgreSQL
       type: postgres
+      uid: postgresql-homelab
       url: postgresql-postgresql.postgresql.svc.cluster.local:5432
       database: homelab
       user: postgres

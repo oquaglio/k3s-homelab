@@ -82,11 +82,11 @@ data:
             href: http://localhost:30093
             description: Kafka Management (AKHQ)
             ping: http://localhost:30093
-        - Spark:
-            icon: mdi-fire
-            href: http://localhost:30808
-            description: Spark Master Dashboard
-            ping: http://localhost:30808
+        - Flink:
+            icon: mdi-lightning-bolt
+            href: http://localhost:30081
+            description: Stream Processing Dashboard
+            ping: http://localhost:30081
         - MinIO:
             icon: minio.png
             href: http://localhost:30901

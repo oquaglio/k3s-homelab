@@ -4,6 +4,17 @@ grafana:
   service:
     type: NodePort
     nodePort: 30080  # Access Grafana at localhost:30080
+  additionalDataSources:
+    - name: PostgreSQL
+      type: postgres
+      url: postgresql-postgresql.postgresql.svc.cluster.local:5432
+      database: homelab
+      user: postgres
+      isDefault: false
+      jsonData:
+        sslmode: disable
+      secureJsonData:
+        password: postgres
 
 # Prometheus configuration
 prometheus:

@@ -13,6 +13,7 @@ data:
     jobmanager.memory.process.size: 1024m
     taskmanager.bind-host: 0.0.0.0
     taskmanager.host: 0.0.0.0
+    taskmanager.rpc.port: {{ .Values.taskmanager.rpcPort }}
     taskmanager.memory.process.size: 1728m
     taskmanager.numberOfTaskSlots: {{ .Values.taskmanager.taskSlots }}
     parallelism.default: 1

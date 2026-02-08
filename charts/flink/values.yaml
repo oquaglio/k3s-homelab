@@ -4,9 +4,9 @@
 # Container image settings
 # Built from charts/flink/docker/Dockerfile (flink:1.20 + Kafka JARs)
 image:
-  repository: flink-kafka
+  repository: localhost/flink-kafka
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Never
 
 # JobManager configuration
 jobmanager:
@@ -46,5 +46,5 @@ kafka:
 # Health checks
 healthcheck:
   enabled: true
-  initialDelaySeconds: 30
+  initialDelaySeconds: 60
   periodSeconds: 10

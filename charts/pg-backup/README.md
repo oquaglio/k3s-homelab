@@ -27,28 +27,23 @@ Two CronJobs are created:
 
 ## Setup
 
-### 1. Create your `.env` file
+### 1. Set S3 environment variables
 
-Copy the example and fill in your S3 credentials:
-
-```bash
-cp .env.example .env
-# Edit .env with your real credentials
-```
-
-The `.env` file is gitignored and will never be committed. It contains:
+`deploy.sh` expects these environment variables to be set before running:
 
 ```bash
-S3_ENDPOINT="https://<account-id>.r2.cloudflarestorage.com"
-S3_ACCESS_KEY="your-access-key"
-S3_SECRET_KEY="your-secret-key"
-S3_BUCKET="pg-backups"
+export S3_ENDPOINT="https://<account-id>.r2.cloudflarestorage.com"
+export S3_ACCESS_KEY="your-access-key"
+export S3_SECRET_KEY="your-secret-key"
+export S3_BUCKET="pg-backups"   # optional, defaults to pg-backups
 ```
+
+How you set them is up to you (shell profile, secrets manager, CI/CD pipeline, etc.).
+If any of `S3_ENDPOINT`, `S3_ACCESS_KEY`, or `S3_SECRET_KEY` are missing, `deploy.sh` will warn and skip pg-backup gracefully.
 
 ### 2. Deploy
 
-`deploy.sh` automatically sources `.env` and passes credentials to Helm via `--set`.
-If `.env` is missing or S3 credentials are empty, the pg-backup step is skipped gracefully.
+`deploy.sh` passes the S3 credentials to Helm via `--set` flags. Credentials are stored as a Kubernetes Secret in the cluster and never committed to git.
 
 ### Manual deploy (without deploy.sh)
 
@@ -73,7 +68,7 @@ schedule: "0 2 * * *"    # Daily at 2 AM UTC
 backup:
   retentionDays: 30       # Auto-delete backups older than this
 
-# S3 bucket name (can also be set via .env S3_BUCKET)
+# S3 bucket name (can also be set via S3_BUCKET env var)
 s3:
   bucket: "pg-backups"
 ```

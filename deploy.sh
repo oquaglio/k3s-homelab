@@ -125,8 +125,12 @@ echo ""
 
 echo -e "${YELLOW}Step 8: Deploying PostgreSQL Backup/Restore...${NC}"
 if [ -z "${S3_ENDPOINT}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}" ]; then
-  echo -e "${YELLOW}Skipping pg-backup: S3 credentials not configured in .env${NC}"
+  echo -e "${YELLOW}Skipping pg-backup: S3 credentials not configured${NC}"
 else
+  echo "Building pg-backup image (postgres + mc)..."
+  podman build -t pg-backup:latest ./charts/pg-backup/docker/ -q
+  podman save pg-backup:latest | sudo k3s ctr images import -
+  echo -e "${GREEN}✓ pg-backup image built and imported into k3s${NC}"
   if helm upgrade --install pg-backup ./charts/pg-backup --namespace postgresql --create-namespace --wait --timeout 60s \
     --set s3.endpoint="${S3_ENDPOINT}" \
     --set s3.accessKey="${S3_ACCESS_KEY}" \

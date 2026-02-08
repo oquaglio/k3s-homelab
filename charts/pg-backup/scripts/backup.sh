@@ -6,16 +6,11 @@ echo "Database: ${PG_DATABASE}@${PG_HOST}:${PG_PORT}"
 echo "S3 Bucket: ${S3_BUCKET} @ ${S3_ENDPOINT}"
 echo ""
 
-# Download MinIO Client (mc) - works with any S3-compatible storage
-echo "Downloading MinIO Client..."
-curl -sL https://dl.min.io/client/mc/release/linux-amd64/mc -o /tmp/mc
-chmod +x /tmp/mc
-
-# Configure S3 alias
-/tmp/mc alias set s3 "${S3_ENDPOINT}" "${S3_ACCESS_KEY}" "${S3_SECRET_KEY}"
+# Configure S3 alias (mc is baked into the image)
+mc alias set s3 "${S3_ENDPOINT}" "${S3_ACCESS_KEY}" "${S3_SECRET_KEY}"
 
 # Ensure bucket exists
-/tmp/mc mb --ignore-existing "s3/${S3_BUCKET}"
+mc mb --ignore-existing "s3/${S3_BUCKET}"
 
 # Generate backup filename with timestamp
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -32,20 +27,20 @@ echo "Backup created: ${BACKUP_FILE} (${BACKUP_SIZE})"
 
 # Upload to S3
 echo "Uploading to S3..."
-/tmp/mc cp "/tmp/${BACKUP_FILE}" "s3/${S3_BUCKET}/${BACKUP_FILE}"
+mc cp "/tmp/${BACKUP_FILE}" "s3/${S3_BUCKET}/${BACKUP_FILE}"
 echo "Upload complete."
 
 # Clean up old backups (older than retention period)
 if [ -n "${RETENTION_DAYS}" ] && [ "${RETENTION_DAYS}" -gt 0 ]; then
   echo ""
   echo "Cleaning up backups older than ${RETENTION_DAYS} days..."
-  /tmp/mc rm --recursive --force --older-than "${RETENTION_DAYS}d" "s3/${S3_BUCKET}/" 2>/dev/null || true
+  mc rm --recursive --force --older-than "${RETENTION_DAYS}d" "s3/${S3_BUCKET}/" 2>/dev/null || true
 fi
 
 # List current backups
 echo ""
 echo "Current backups in S3:"
-/tmp/mc ls "s3/${S3_BUCKET}/"
+mc ls "s3/${S3_BUCKET}/"
 
 echo ""
 echo "=== Backup complete ==="

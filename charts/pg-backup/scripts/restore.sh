@@ -6,17 +6,12 @@ echo "Database: ${PG_DATABASE}@${PG_HOST}:${PG_PORT}"
 echo "S3 Bucket: ${S3_BUCKET} @ ${S3_ENDPOINT}"
 echo ""
 
-# Download MinIO Client (mc)
-echo "Downloading MinIO Client..."
-curl -sL https://dl.min.io/client/mc/release/linux-amd64/mc -o /tmp/mc
-chmod +x /tmp/mc
-
-# Configure S3 alias
-/tmp/mc alias set s3 "${S3_ENDPOINT}" "${S3_ACCESS_KEY}" "${S3_SECRET_KEY}"
+# Configure S3 alias (mc is baked into the image)
+mc alias set s3 "${S3_ENDPOINT}" "${S3_ACCESS_KEY}" "${S3_SECRET_KEY}"
 
 # Find latest backup (files are named homelab-YYYYMMDD-HHMMSS.dump, so alphabetical = chronological)
 echo "Looking for latest backup..."
-LATEST=$(/tmp/mc ls "s3/${S3_BUCKET}/" 2>/dev/null | grep '\.dump$' | tail -1 | awk '{print $NF}')
+LATEST=$(mc ls "s3/${S3_BUCKET}/" 2>/dev/null | grep '\.dump$' | tail -1 | awk '{print $NF}')
 
 if [ -z "${LATEST}" ]; then
   echo "No backup found in s3://${S3_BUCKET}/"
@@ -28,7 +23,7 @@ echo "Latest backup: ${LATEST}"
 
 # Download backup
 echo "Downloading..."
-/tmp/mc cp "s3/${S3_BUCKET}/${LATEST}" "/tmp/restore.dump"
+mc cp "s3/${S3_BUCKET}/${LATEST}" "/tmp/restore.dump"
 
 BACKUP_SIZE=$(du -h /tmp/restore.dump | cut -f1)
 echo "Downloaded: ${BACKUP_SIZE}"

@@ -2,10 +2,11 @@
 # Backs up PostgreSQL to any S3-compatible storage (Cloudflare R2, AWS S3, etc.)
 # Restores automatically on deploy if a backup exists.
 
+# Container image (built from charts/pg-backup/docker/Dockerfile: postgres:17 + mc)
 image:
-  repository: postgres
-  tag: "17"
-  pullPolicy: IfNotPresent
+  repository: localhost/pg-backup
+  tag: "latest"
+  pullPolicy: Never
 
 # Backup schedule (default: daily at 2 AM UTC)
 schedule: "0 2 * * *"

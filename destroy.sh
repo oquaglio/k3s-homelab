@@ -22,100 +22,119 @@ echo ""
 echo -e "${YELLOW}Destroying applications...${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 1: Deleting Code-Server (Helm)...${NC}"
+echo -e "${YELLOW}Step 1: Backing up PostgreSQL to cloud storage...${NC}"
+kubectl delete job pg-backup-run -n postgresql 2>/dev/null || true
+if kubectl get cronjob pg-backup-pg-backup-backup -n postgresql 2>/dev/null; then
+  kubectl create job pg-backup-run \
+    --from=cronjob/pg-backup-pg-backup-backup -n postgresql
+  kubectl wait --for=condition=complete job/pg-backup-run \
+    -n postgresql --timeout=300s 2>/dev/null && \
+    echo -e "${GREEN}✓ PostgreSQL backup complete${NC}" || \
+    echo -e "${YELLOW}Warning: Backup may have failed or timed out${NC}"
+else
+  echo -e "${YELLOW}pg-backup not deployed, skipping backup${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}Step 2: Deleting Code-Server (Helm)...${NC}"
 helm uninstall code-server --namespace default 2>/dev/null || true
 echo -e "${GREEN}✓ Code-Server deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 2: Deleting C64 Emulator (Helm)...${NC}"
+echo -e "${YELLOW}Step 3: Deleting C64 Emulator (Helm)...${NC}"
 helm uninstall c64 --namespace default 2>/dev/null || true
 echo -e "${GREEN}✓ C64 Emulator deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 3: Deleting DOSBox (Helm)...${NC}"
+echo -e "${YELLOW}Step 4: Deleting DOSBox (Helm)...${NC}"
 helm uninstall dosbox --namespace default 2>/dev/null || true
 echo -e "${GREEN}✓ DOSBox deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Deleting Stock Analyzer (Helm)...${NC}"
+echo -e "${YELLOW}Step 5: Deleting Stock Analyzer (Helm)...${NC}"
 helm uninstall stock-analyzer --namespace stock-analyzer 2>/dev/null || true
 echo -e "${GREEN}✓ Stock Analyzer deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 5: Deleting n8n (Helm)...${NC}"
+echo -e "${YELLOW}Step 6: Deleting n8n (Helm)...${NC}"
 helm uninstall n8n --namespace n8n 2>/dev/null || true
 echo -e "${GREEN}✓ n8n deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 6: Deleting Flink (Helm)...${NC}"
+echo -e "${YELLOW}Step 7: Deleting Flink (Helm)...${NC}"
 helm uninstall flink --namespace flink 2>/dev/null || true
 echo -e "${GREEN}✓ Flink deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 7: Deleting Kafka UI (Helm)...${NC}"
+echo -e "${YELLOW}Step 8: Deleting Kafka UI (Helm)...${NC}"
 helm uninstall kafka-ui --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ Kafka UI deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 8: Deleting AKHQ (Helm)...${NC}"
+echo -e "${YELLOW}Step 9: Deleting AKHQ (Helm)...${NC}"
 helm uninstall akhq --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ AKHQ deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 9: Deleting Kafka (Helm)...${NC}"
+echo -e "${YELLOW}Step 10: Deleting Kafka (Helm)...${NC}"
 helm uninstall kafka --namespace kafka 2>/dev/null || true
 echo -e "${GREEN}✓ Kafka deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 10: Deleting MinIO (Helm)...${NC}"
+echo -e "${YELLOW}Step 11: Deleting MinIO (Helm)...${NC}"
 helm uninstall minio --namespace minio 2>/dev/null || true
 echo -e "${GREEN}✓ MinIO deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 11: Deleting pgAdmin (Helm)...${NC}"
+echo -e "${YELLOW}Step 12: Deleting pgAdmin (Helm)...${NC}"
 helm uninstall pgadmin --namespace postgresql 2>/dev/null || true
 echo -e "${GREEN}✓ pgAdmin deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 12: Deleting PostgreSQL (Helm)...${NC}"
+echo -e "${YELLOW}Step 13: Deleting pg-backup (Helm)...${NC}"
+helm uninstall pg-backup --namespace postgresql 2>/dev/null || true
+echo -e "${GREEN}✓ pg-backup deleted${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 14: Deleting PostgreSQL (Helm)...${NC}"
 helm uninstall postgresql --namespace postgresql 2>/dev/null || true
 echo -e "${GREEN}✓ PostgreSQL deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 13: Deleting Uptime Kuma...${NC}"
+echo -e "${YELLOW}Step 15: Deleting Uptime Kuma...${NC}"
 kubectl delete -f monitoring/uptime-kuma/uptime-kuma.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Uptime Kuma deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 14: Deleting Kube Prometheus Stack...${NC}"
+echo -e "${YELLOW}Step 16: Deleting Kube Prometheus Stack...${NC}"
 kubectl delete -f monitoring/kube-prometheus-stack/manifests.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kube Prometheus Stack deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 15: Deleting Kubernetes Dashboard...${NC}"
+echo -e "${YELLOW}Step 17: Deleting Kubernetes Dashboard...${NC}"
 kubectl delete -f monitoring/kubernetes-dashboard/admin-user.yaml --ignore-not-found=true
 kubectl delete -f monitoring/kubernetes-dashboard/dashboard.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Kubernetes Dashboard deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 16: Deleting Portainer...${NC}"
+echo -e "${YELLOW}Step 18: Deleting Portainer...${NC}"
 kubectl delete -f monitoring/portainer/portainer.yaml --ignore-not-found=true
 kubectl delete namespace portainer --ignore-not-found=true
 echo -e "${GREEN}✓ Portainer deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 17: Deleting Homepage...${NC}"
+echo -e "${YELLOW}Step 19: Deleting Homepage...${NC}"
 kubectl delete -f apps/homepage/deployment.yaml --ignore-not-found=true
 echo -e "${GREEN}✓ Homepage deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 18: Cleaning up secrets...${NC}"
+echo -e "${YELLOW}Step 20: Cleaning up secrets...${NC}"
 kubectl delete secret portainer-admin-password -n portainer --ignore-not-found=true
 kubectl delete secret kube-prometheus-stack-grafana -n monitoring --ignore-not-found=true
 echo -e "${GREEN}✓ Secrets deleted${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 19: Deleting namespaces...${NC}"
+echo -e "${YELLOW}Step 21: Deleting namespaces...${NC}"
 kubectl delete namespace flink --ignore-not-found=true
 kubectl delete namespace kafka --ignore-not-found=true
 kubectl delete namespace minio --ignore-not-found=true

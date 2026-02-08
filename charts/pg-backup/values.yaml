@@ -1,0 +1,41 @@
+# PostgreSQL Backup/Restore - Default Values
+# Backs up PostgreSQL to any S3-compatible storage (Cloudflare R2, AWS S3, etc.)
+# Restores automatically on deploy if a backup exists.
+
+image:
+  repository: postgres
+  tag: "17"
+  pullPolicy: IfNotPresent
+
+# Backup schedule (default: daily at 2 AM UTC)
+schedule: "0 2 * * *"
+
+# PostgreSQL connection (uses existing homelab PostgreSQL)
+postgresql:
+  host: "postgresql-postgresql.postgresql.svc.cluster.local"
+  port: "5432"
+  database: "homelab"
+  username: "postgres"
+  password: "postgres"
+
+# S3-compatible storage (Cloudflare R2, AWS S3, Backblaze B2, MinIO, etc.)
+# Credentials are passed via --set from .env file (see .env.example)
+# DO NOT put real credentials here - this file is committed to git
+s3:
+  endpoint: ""        # Set via --set or .env
+  accessKey: ""       # Set via --set or .env
+  secretKey: ""       # Set via --set or .env
+  bucket: "pg-backups"
+
+# Backup retention
+backup:
+  retentionDays: 30   # Delete backups older than this
+
+# Resource limits for backup/restore pods
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"

@@ -14,6 +14,11 @@ NC='\033[0m' # No Color
 
 export KUBECONFIG=~/.kube/config
 
+# Check S3 credentials for pg-backup (expected to be set externally)
+if [ -z "${S3_ENDPOINT}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}" ]; then
+  echo -e "${YELLOW}Warning: S3_ENDPOINT, S3_ACCESS_KEY, or S3_SECRET_KEY not set. pg-backup will be skipped.${NC}"
+fi
+
 echo -e "${YELLOW}Deploying applications to K3s cluster...${NC}"
 echo ""
 
@@ -118,7 +123,31 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 8: Deploying pgAdmin (PostgreSQL UI) via Helm...${NC}"
+echo -e "${YELLOW}Step 8: Deploying PostgreSQL Backup/Restore...${NC}"
+if [ -z "${S3_ENDPOINT}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}" ]; then
+  echo -e "${YELLOW}Skipping pg-backup: S3 credentials not configured in .env${NC}"
+else
+  if helm upgrade --install pg-backup ./charts/pg-backup --namespace postgresql --create-namespace --wait --timeout 60s \
+    --set s3.endpoint="${S3_ENDPOINT}" \
+    --set s3.accessKey="${S3_ACCESS_KEY}" \
+    --set s3.secretKey="${S3_SECRET_KEY}" \
+    --set s3.bucket="${S3_BUCKET:-pg-backups}"; then
+    echo -e "${GREEN}✓ PostgreSQL Backup deployed${NC}"
+    # Attempt restore from latest cloud backup (skips gracefully if no backup exists)
+    echo "Restoring from latest cloud backup (if available)..."
+    kubectl delete job pg-restore-run -n postgresql 2>/dev/null || true
+    kubectl create job pg-restore-run \
+      --from=cronjob/pg-backup-pg-backup-restore -n postgresql
+    kubectl wait --for=condition=complete job/pg-restore-run \
+      -n postgresql --timeout=300s 2>/dev/null || \
+      echo -e "${YELLOW}No backup found or restore skipped${NC}"
+  else
+    echo -e "${RED}✗ Failed to deploy PostgreSQL Backup${NC}"
+  fi
+fi
+echo ""
+
+echo -e "${YELLOW}Step 9: Deploying pgAdmin (PostgreSQL UI) via Helm...${NC}"
 if helm upgrade --install pgadmin ./charts/pgadmin --namespace postgresql --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ pgAdmin deployed (Helm)${NC}"
 else
@@ -126,7 +155,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 9: Deploying MinIO (Object Storage) via Helm...${NC}"
+echo -e "${YELLOW}Step 10: Deploying MinIO (Object Storage) via Helm...${NC}"
 if helm upgrade --install minio ./charts/minio --namespace minio --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ MinIO deployed (Helm)${NC}"
 else
@@ -134,7 +163,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 10: Deploying Kafka (Event Streaming) via Helm...${NC}"
+echo -e "${YELLOW}Step 11: Deploying Kafka (Event Streaming) via Helm...${NC}"
 if helm upgrade --install kafka ./charts/kafka --namespace kafka --create-namespace --wait --timeout 180s; then
   echo -e "${GREEN}✓ Kafka deployed (Helm)${NC}"
 else
@@ -142,7 +171,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 11: Deploying AKHQ (Kafka UI) via Helm...${NC}"
+echo -e "${YELLOW}Step 12: Deploying AKHQ (Kafka UI) via Helm...${NC}"
 if helm upgrade --install akhq ./charts/akhq --namespace kafka --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ AKHQ deployed (Helm)${NC}"
 else
@@ -150,7 +179,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 12: Deploying Kafka UI (Provectus) via Helm...${NC}"
+echo -e "${YELLOW}Step 13: Deploying Kafka UI (Provectus) via Helm...${NC}"
 if helm upgrade --install kafka-ui ./charts/kafka-ui --namespace kafka --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ Kafka UI deployed (Helm)${NC}"
 else
@@ -158,7 +187,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 13: Deploying n8n (Workflow Automation) via Helm...${NC}"
+echo -e "${YELLOW}Step 14: Deploying n8n (Workflow Automation) via Helm...${NC}"
 if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
   echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 else
@@ -166,13 +195,13 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 14: Building Flink image with Kafka connectors...${NC}"
+echo -e "${YELLOW}Step 15: Building Flink image with Kafka connectors...${NC}"
 podman build -t flink-kafka:latest ./charts/flink/docker/ -q
 podman save flink-kafka:latest | sudo k3s ctr images import -
 echo -e "${GREEN}✓ Flink image built and imported into k3s${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 15: Deploying Flink (Stream Processing) via Helm...${NC}"
+echo -e "${YELLOW}Step 16: Deploying Flink (Stream Processing) via Helm...${NC}"
 if helm upgrade --install flink ./charts/flink --namespace flink --create-namespace --wait --timeout 180s; then
   echo -e "${GREEN}✓ Flink deployed (Helm)${NC}"
 else
@@ -180,7 +209,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 16: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
+echo -e "${YELLOW}Step 17: Deploying Stock Analyzer (CronJob) via Helm...${NC}"
 if helm upgrade --install stock-analyzer ./charts/stock-analyzer --namespace stock-analyzer --create-namespace --wait --timeout 60s; then
   echo -e "${GREEN}✓ Stock Analyzer deployed (Helm) - runs daily at 10 PM UTC${NC}"
 else
@@ -188,7 +217,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 17: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
+echo -e "${YELLOW}Step 18: Deploying DOSBox (DOS Games Arcade) via Helm...${NC}"
 if helm upgrade --install dosbox ./charts/dosbox --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ DOSBox deployed (Helm)${NC}"
 else
@@ -196,7 +225,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 18: Deploying C64 Emulator (for fun!)...${NC}"
+echo -e "${YELLOW}Step 19: Deploying C64 Emulator (for fun!)...${NC}"
 if helm upgrade --install c64 ./charts/c64-emulator --namespace default --wait --timeout 60s; then
   echo -e "${GREEN}✓ C64 Emulator deployed (Helm)${NC}"
 else
@@ -204,7 +233,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 19: Deploying Code-Server (VS Code in browser)...${NC}"
+echo -e "${YELLOW}Step 20: Deploying Code-Server (VS Code in browser)...${NC}"
 if helm upgrade --install code-server ./charts/code-server --namespace default --wait --timeout 120s; then
   echo -e "${GREEN}✓ Code-Server deployed (Helm)${NC}"
 else

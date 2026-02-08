@@ -13,6 +13,7 @@ grafana:
       user: postgres
       isDefault: false
       jsonData:
+        database: homelab
         sslmode: disable
       secureJsonData:
         password: postgres

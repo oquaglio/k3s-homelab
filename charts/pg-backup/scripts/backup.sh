@@ -30,11 +30,20 @@ echo "Uploading to S3..."
 mc cp "/tmp/${BACKUP_FILE}" "s3/${S3_BUCKET}/${BACKUP_FILE}"
 echo "Upload complete."
 
-# Clean up old backups (older than retention period)
-if [ -n "${RETENTION_DAYS}" ] && [ "${RETENTION_DAYS}" -gt 0 ]; then
+# Clean up old backups (keep only the last N)
+if [ -n "${RETENTION_COUNT}" ] && [ "${RETENTION_COUNT}" -gt 0 ]; then
   echo ""
-  echo "Cleaning up backups older than ${RETENTION_DAYS} days..."
-  mc rm --recursive --force --older-than "${RETENTION_DAYS}d" "s3/${S3_BUCKET}/" 2>/dev/null || true
+  TOTAL=$(mc ls "s3/${S3_BUCKET}/" 2>/dev/null | grep '\.dump$' | wc -l)
+  if [ "${TOTAL}" -gt "${RETENTION_COUNT}" ]; then
+    DELETE_COUNT=$((TOTAL - RETENTION_COUNT))
+    echo "Pruning ${DELETE_COUNT} old backup(s) (keeping last ${RETENTION_COUNT})..."
+    mc ls "s3/${S3_BUCKET}/" 2>/dev/null | grep '\.dump$' | head -n "${DELETE_COUNT}" | awk '{print $NF}' | while read -r FILE; do
+      echo "  Deleting: ${FILE}"
+      mc rm "s3/${S3_BUCKET}/${FILE}" 2>/dev/null || true
+    done
+  else
+    echo "Backup count (${TOTAL}) within retention limit (${RETENTION_COUNT}), nothing to prune."
+  fi
 fi
 
 # List current backups

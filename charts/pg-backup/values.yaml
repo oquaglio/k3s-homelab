@@ -30,7 +30,7 @@ s3:
 
 # Backup retention
 backup:
-  retentionDays: 30   # Delete backups older than this
+  retentionCount: 30  # Keep the last N backups, delete the rest
 
 # Resource limits for backup/restore pods
 resources:

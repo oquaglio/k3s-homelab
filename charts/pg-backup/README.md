@@ -32,14 +32,14 @@ Two CronJobs are created:
 `deploy.sh` expects these environment variables to be set before running:
 
 ```bash
-export S3_ENDPOINT="https://<account-id>.r2.cloudflarestorage.com"
-export S3_ACCESS_KEY="your-access-key"
-export S3_SECRET_KEY="your-secret-key"
-export S3_BUCKET="pg-backups"   # optional, defaults to pg-backups
+export K3S_S3_ENDPOINT="https://<account-id>.r2.cloudflarestorage.com"
+export K3S_S3_ACCESS_KEY="your-access-key"
+export K3S_S3_SECRET_KEY="your-secret-key"
+export K3S_S3_BUCKET="pg-backups"   # optional, defaults to pg-backups
 ```
 
 How you set them is up to you (shell profile, secrets manager, CI/CD pipeline, etc.).
-If any of `S3_ENDPOINT`, `S3_ACCESS_KEY`, or `S3_SECRET_KEY` are missing, `deploy.sh` will warn and skip pg-backup gracefully.
+If any of `K3S_S3_ENDPOINT`, `K3S_S3_ACCESS_KEY`, or `K3S_S3_SECRET_KEY` are missing, `deploy.sh` will warn and skip pg-backup gracefully.
 
 ### 2. Deploy
 
@@ -68,7 +68,7 @@ schedule: "0 2 * * *"    # Daily at 2 AM UTC
 backup:
   retentionDays: 30       # Auto-delete backups older than this
 
-# S3 bucket name (can also be set via S3_BUCKET env var)
+# S3 bucket name (can also be set via K3S_S3_BUCKET env var)
 s3:
   bucket: "pg-backups"
 ```

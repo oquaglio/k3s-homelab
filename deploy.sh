@@ -14,9 +14,15 @@ NC='\033[0m' # No Color
 
 export KUBECONFIG=~/.kube/config
 
+# Hostname for service URLs (default: localhost, override with K3S_HOSTNAME env var)
+# e.g. export K3S_HOSTNAME=desktop.lan
+K3S_HOSTNAME="${K3S_HOSTNAME:-localhost}"
+echo "Using hostname: ${K3S_HOSTNAME}"
+echo ""
+
 # Check S3 credentials for pg-backup (expected to be set externally)
-if [ -z "${S3_ENDPOINT}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}" ]; then
-  echo -e "${YELLOW}Warning: S3_ENDPOINT, S3_ACCESS_KEY, or S3_SECRET_KEY not set. pg-backup will be skipped.${NC}"
+if [ -z "${K3S_S3_ENDPOINT}" ] || [ -z "${K3S_S3_ACCESS_KEY}" ] || [ -z "${K3S_S3_SECRET_KEY}" ]; then
+  echo -e "${YELLOW}Warning: K3S_S3_ENDPOINT, K3S_S3_ACCESS_KEY, or K3S_S3_SECRET_KEY not set. pg-backup will be skipped.${NC}"
 fi
 
 echo -e "${YELLOW}Deploying applications to K3s cluster...${NC}"
@@ -30,10 +36,10 @@ if ! kubectl cluster-info &> /dev/null; then
 fi
 
 echo -e "${YELLOW}Step 1: Deploying Homepage (Dashboard)...${NC}"
-kubectl apply -f apps/homepage/deployment.yaml
+sed "s/localhost/${K3S_HOSTNAME}/g" apps/homepage/deployment.yaml | kubectl apply -f -
 kubectl rollout restart deployment homepage 2>/dev/null || true
 echo "Waiting for Homepage to be ready..."
-kubectl wait --for=condition=ready pod -l app=homepage --timeout=120s || echo -e "${YELLOW}Warning: Homepage pods may still be starting${NC}"
+kubectl rollout status deployment homepage --timeout=120s || echo -e "${YELLOW}Warning: Homepage pods may still be starting${NC}"
 echo -e "${GREEN}✓ Homepage deployed${NC}"
 echo ""
 
@@ -46,7 +52,7 @@ kubectl wait --for=jsonpath='{.status.replicas}'=1 deployment/portainer -n porta
 kubectl wait --for=condition=ready pod -l app=portainer -n portainer --timeout=120s || echo -e "${YELLOW}Warning: Portainer pods may still be starting${NC}"
 
 # Wait for Portainer API to be ready and initialize admin user
-PORTAINER_URL="http://localhost:30777"
+PORTAINER_URL="http://${K3S_HOSTNAME}:30777"
 echo -n "Waiting for Portainer API to be ready"
 ADMIN_CHECK="000"
 for i in {1..45}; do
@@ -124,7 +130,7 @@ fi
 echo ""
 
 echo -e "${YELLOW}Step 8: Deploying PostgreSQL Backup/Restore...${NC}"
-if [ -z "${S3_ENDPOINT}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}" ]; then
+if [ -z "${K3S_S3_ENDPOINT}" ] || [ -z "${K3S_S3_ACCESS_KEY}" ] || [ -z "${K3S_S3_SECRET_KEY}" ]; then
   echo -e "${YELLOW}Skipping pg-backup: S3 credentials not configured${NC}"
 else
   echo "Building pg-backup image (postgres + mc)..."
@@ -132,10 +138,10 @@ else
   podman save pg-backup:latest | sudo k3s ctr images import -
   echo -e "${GREEN}✓ pg-backup image built and imported into k3s${NC}"
   if helm upgrade --install pg-backup ./charts/pg-backup --namespace postgresql --create-namespace --wait --timeout 60s \
-    --set s3.endpoint="${S3_ENDPOINT}" \
-    --set s3.accessKey="${S3_ACCESS_KEY}" \
-    --set s3.secretKey="${S3_SECRET_KEY}" \
-    --set s3.bucket="${S3_BUCKET:-pg-backups}"; then
+    --set s3.endpoint="${K3S_S3_ENDPOINT}" \
+    --set s3.accessKey="${K3S_S3_ACCESS_KEY}" \
+    --set s3.secretKey="${K3S_S3_SECRET_KEY}" \
+    --set s3.bucket="${K3S_S3_BUCKET:-pg-backups}"; then
     echo -e "${GREEN}✓ PostgreSQL Backup deployed${NC}"
     # Attempt restore from latest cloud backup (skips gracefully if no backup exists)
     echo "Restoring from latest cloud backup (if available)..."
@@ -192,7 +198,9 @@ fi
 echo ""
 
 echo -e "${YELLOW}Step 14: Deploying n8n (Workflow Automation) via Helm...${NC}"
-if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s; then
+if helm upgrade --install n8n ./charts/n8n --namespace n8n --create-namespace --wait --timeout 120s \
+  --set config.host="${K3S_HOSTNAME}" \
+  --set config.webhookUrl="http://${K3S_HOSTNAME}:30555/"; then
   echo -e "${GREEN}✓ n8n deployed (Helm)${NC}"
 else
   echo -e "${RED}✗ Failed to deploy n8n${NC}"
@@ -254,30 +262,30 @@ echo "  kubectl get pods --all-namespaces"
 echo ""
 echo "Access your services:"
 echo ""
-echo -e "${GREEN}Homepage Dashboard: http://localhost:30000${NC}"
+echo -e "${GREEN}Homepage Dashboard: http://${K3S_HOSTNAME}:30000${NC}"
 echo ""
 echo "All services are accessible from the Homepage dashboard!"
 echo ""
 echo "Direct service URLs:"
-echo "  • Homepage:    http://localhost:30000 (start here!)"
-echo "  • Portainer:   http://localhost:30777 (admin / set on first login)"
-echo "  • Grafana:     http://localhost:30080 (admin / admin)"
-echo "  • Prometheus:  http://localhost:30090"
-echo "  • Uptime Kuma: http://localhost:30333"
-echo "  • PostgreSQL:  localhost:30432 (user: postgres, pass: postgres, db: homelab)"
-echo "  • pgAdmin:     http://localhost:30433 (admin@homelab.dev / admin)"
-echo "  • MinIO API:   http://localhost:30900 (minioadmin / minioadmin)"
-echo "  • MinIO UI:    http://localhost:30901 (minioadmin / minioadmin)"
-echo "  • Kafka:       localhost:30092 (bootstrap server)"
-echo "  • AKHQ:        http://localhost:30093"
-echo "  • Kafka UI:    http://localhost:30094"
-echo "  • Flink UI:    http://localhost:30081"
-echo "  • n8n:         http://localhost:30555 (set on first login)"
-echo "  • DOSBox:      http://localhost:30086"
-echo "  • C64:         http://localhost:30064"
-echo "  • Code-Server: http://localhost:30443 (password: homelab123)"
+echo "  • Homepage:    http://${K3S_HOSTNAME}:30000 (start here!)"
+echo "  • Portainer:   http://${K3S_HOSTNAME}:30777 (admin / set on first login)"
+echo "  • Grafana:     http://${K3S_HOSTNAME}:30080 (admin / admin)"
+echo "  • Prometheus:  http://${K3S_HOSTNAME}:30090"
+echo "  • Uptime Kuma: http://${K3S_HOSTNAME}:30333"
+echo "  • PostgreSQL:  ${K3S_HOSTNAME}:30432 (user: postgres, pass: postgres, db: homelab)"
+echo "  • pgAdmin:     http://${K3S_HOSTNAME}:30433 (admin@homelab.dev / admin)"
+echo "  • MinIO API:   http://${K3S_HOSTNAME}:30900 (minioadmin / minioadmin)"
+echo "  • MinIO UI:    http://${K3S_HOSTNAME}:30901 (minioadmin / minioadmin)"
+echo "  • Kafka:       ${K3S_HOSTNAME}:30092 (bootstrap server)"
+echo "  • AKHQ:        http://${K3S_HOSTNAME}:30093"
+echo "  • Kafka UI:    http://${K3S_HOSTNAME}:30094"
+echo "  • Flink UI:    http://${K3S_HOSTNAME}:30081"
+echo "  • n8n:         http://${K3S_HOSTNAME}:30555 (set on first login)"
+echo "  • DOSBox:      http://${K3S_HOSTNAME}:30086"
+echo "  • C64:         http://${K3S_HOSTNAME}:30064"
+echo "  • Code-Server: http://${K3S_HOSTNAME}:30443 (password: homelab123)"
 echo ""
 echo "For Kubernetes Dashboard:"
 echo "  1. Run: kubectl proxy"
-echo "  2. Visit: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+echo "  2. Visit: http://${K3S_HOSTNAME}:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
 echo "  3. Get token: kubectl -n kubernetes-dashboard create token admin-user"

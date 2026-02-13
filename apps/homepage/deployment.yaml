@@ -54,44 +54,44 @@ data:
             icon: grafana.png
             href: http://localhost:30080
             description: Metrics & Dashboards
-            ping: http://localhost:30080
+            siteMonitor: http://kube-prometheus-stack-grafana.monitoring:80
         - Prometheus:
             icon: prometheus.png
             href: http://localhost:30090
             description: Metrics Collection
-            ping: http://localhost:30090
+            siteMonitor: http://kube-prometheus-stack-prometheus.monitoring:9090
         - Portainer:
             icon: portainer.png
             href: http://localhost:30777
             description: Container Management
-            ping: http://localhost:30777
+            siteMonitor: http://portainer.portainer:9000
         - Uptime Kuma:
             icon: uptime-kuma.png
             href: http://localhost:30333
             description: Uptime Monitoring
-            ping: http://localhost:30333
+            siteMonitor: http://uptime-kuma.monitoring:3001
 
     - Data:
         - Kafka UI:
             icon: mdi-apache-kafka
             href: http://localhost:30094
             description: Kafka Management (Provectus)
-            ping: http://localhost:30094
+            siteMonitor: http://kafka-ui-kafka-ui.kafka:8080
         - AKHQ:
             icon: mdi-apache-kafka
             href: http://localhost:30093
             description: Kafka Management (AKHQ)
-            ping: http://localhost:30093
+            siteMonitor: http://akhq-akhq.kafka:8080
         - Flink:
             icon: mdi-lightning-bolt
             href: http://localhost:30081
             description: Stream Processing Dashboard
-            ping: http://localhost:30081
+            siteMonitor: http://flink-flink-jobmanager.flink:8081
         - MinIO:
             icon: minio.png
             href: http://localhost:30901
             description: Object Storage Console
-            ping: http://localhost:30901
+            siteMonitor: http://minio-minio.minio:9001
         - PostgreSQL:
             icon: postgres.png
             href: http://localhost:30432
@@ -100,33 +100,33 @@ data:
             icon: pgadmin.png
             href: http://localhost:30433
             description: PostgreSQL Management UI
-            ping: http://localhost:30433
+            siteMonitor: http://pgadmin-pgadmin.postgresql:80
 
     - Automation:
         - n8n:
             icon: n8n.png
             href: http://localhost:30555
             description: Workflow Automation
-            ping: http://localhost:30555
+            siteMonitor: http://n8n-n8n.n8n:5678
 
     - Development:
         - Code-Server:
             icon: vscode.png
             href: http://localhost:30443
             description: VS Code in Browser
-            ping: http://localhost:30443
+            siteMonitor: http://code-server.default:8443
 
     - Fun:
         - DOS Games:
             icon: mdi-controller-classic
             href: http://localhost:30086
             description: DOOM, Digger, Wolfenstein & more!
-            ping: http://localhost:30086
+            siteMonitor: http://dosbox-dosbox.default:80
         - C64 Emulator:
             icon: mdi-desktop-classic
             href: http://localhost:30064
             description: Commodore 64 in K8s!
-            ping: http://localhost:30064
+            siteMonitor: http://c64.default:80
 
     - Cluster:
         - Kubernetes Dashboard:

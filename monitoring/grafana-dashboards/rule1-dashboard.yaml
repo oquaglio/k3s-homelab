@@ -594,10 +594,14 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "blue" },
-              "unit": "currencyUSD"
+              "color": { "mode": "fixed", "fixedColor": "blue" }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Year" },
+                "properties": [{ "id": "unit", "value": "none" }]
+              }
+            ]
           }
         },
         {
@@ -673,10 +677,14 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "orange" },
-              "unit": "currencyUSD"
+              "color": { "mode": "fixed", "fixedColor": "orange" }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Year" },
+                "properties": [{ "id": "unit", "value": "none" }]
+              }
+            ]
           }
         }
       ],

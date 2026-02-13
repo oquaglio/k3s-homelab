@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stock-analyzer.fullname" . }}-rule1-script
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stock-analyzer.labels" . | nindent 4 }}
+data:
+  rule1_analyzer.py: |
+{{ .Files.Get "scripts/rule1_analyzer.py" | indent 4 }}

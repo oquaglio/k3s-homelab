@@ -1,0 +1,705 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rule1
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  rule1.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "Rule #1 Overview",
+          "type": "row"
+        },
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Stocks Analyzed",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"Total\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary)",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "text" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Rule #1 PASS",
+          "description": "Tickers with BVPS, EPS, Revenue, and FCF CAGRs all >= 10%",
+          "gridPos": { "h": 4, "w": 5, "x": 4, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT COUNT(*) AS \"Pass\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary) AND bvps_cagr_full >= 0.10 AND eps_cagr_full >= 0.10 AND revenue_cagr_full >= 0.10 AND fcf_cagr_full >= 0.10",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "green" } },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Avg ROIC (TTM)",
+          "gridPos": { "h": 4, "w": 5, "x": 9, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(AVG(roic_ttm), 1) AS \"ROIC %\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary) AND roic_ttm IS NOT NULL",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "blue" },
+              "unit": "percent",
+              "decimals": 1
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Avg D/E Ratio",
+          "gridPos": { "h": 4, "w": 5, "x": 14, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(AVG(debt_to_equity), 1) AS \"D/E\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary) AND debt_to_equity IS NOT NULL",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "orange" }, "decimals": 1 },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "type": "stat",
+          "title": "Avg Years of Data",
+          "gridPos": { "h": 4, "w": 5, "x": 19, "y": 1 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(AVG(years_of_data), 1) AS \"Years\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary)",
+            "refId": "A"
+          }],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value",
+            "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "fixed", "fixedColor": "text" }, "decimals": 1 },
+            "overrides": []
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "id": 101,
+          "title": "Rule #1 Summary — All Stocks",
+          "type": "row"
+        },
+        {
+          "id": 10,
+          "type": "table",
+          "title": "CAGR Summary & Snapshot Metrics",
+          "description": "Phil Town Rule #1: Look for all Big 4 CAGRs >= 10%. Green = pass, Red = fail.",
+          "gridPos": { "h": 16, "w": 24, "x": 0, "y": 6 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT r.ticker AS \"Ticker\", s.company_name AS \"Company\", r.years_of_data AS \"Years\", ROUND(r.roic_ttm, 1) AS \"ROIC %\", ROUND(r.bvps_cagr_full * 100, 1) AS \"BVPS CAGR %\", ROUND(r.eps_cagr_full * 100, 1) AS \"EPS CAGR %\", ROUND(r.revenue_cagr_full * 100, 1) AS \"Rev CAGR %\", ROUND(r.fcf_cagr_full * 100, 1) AS \"FCF CAGR %\", ROUND(r.roe_pct, 1) AS \"ROE %\", ROUND(r.roa_pct, 1) AS \"ROA %\", ROUND(r.debt_to_equity, 1) AS \"D/E\", ROUND(r.current_ratio, 2) AS \"Curr Ratio\", ROUND(r.quick_ratio, 2) AS \"Quick Ratio\", ROUND(r.pe_ttm, 1) AS \"PE (TTM)\", ROUND(r.price_current, 2) AS \"Price\", ROUND(r.dividends_ttm, 2) AS \"Div (TTM)\" FROM rule1_summary r LEFT JOIN stocks s ON r.ticker = s.ticker WHERE r.calc_date = (SELECT MAX(calc_date) FROM rule1_summary) ORDER BY r.eps_cagr_full DESC NULLS LAST",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "BVPS CAGR %" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "EPS CAGR %" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Rev CAGR %" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "FCF CAGR %" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "ROIC %" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "D/E" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "green", "value": null },
+                      { "color": "yellow", "value": 50 },
+                      { "color": "red", "value": 100 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Curr Ratio" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "yellow", "value": 1 },
+                      { "color": "green", "value": 1.5 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Quick Ratio" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "yellow", "value": 0.8 },
+                      { "color": "green", "value": 1 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              }
+            ]
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+          "id": 102,
+          "title": "CAGR Comparison",
+          "type": "row"
+        },
+        {
+          "id": 20,
+          "type": "barchart",
+          "title": "EPS CAGR by Ticker (Full Period)",
+          "gridPos": { "h": 10, "w": 12, "x": 0, "y": 23 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ticker AS \"Ticker\", ROUND(eps_cagr_full * 100, 1) AS \"EPS CAGR %\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary) AND eps_cagr_full IS NOT NULL ORDER BY eps_cagr_full DESC",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always",
+            "barWidth": 0.7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 5 },
+                  { "color": "green", "value": 10 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 21,
+          "type": "barchart",
+          "title": "Revenue CAGR by Ticker (Full Period)",
+          "gridPos": { "h": 10, "w": 12, "x": 12, "y": 23 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ticker AS \"Ticker\", ROUND(revenue_cagr_full * 100, 1) AS \"Rev CAGR %\" FROM rule1_summary WHERE calc_date = (SELECT MAX(calc_date) FROM rule1_summary) AND revenue_cagr_full IS NOT NULL ORDER BY revenue_cagr_full DESC",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always",
+            "barWidth": 0.7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 5 },
+                  { "color": "green", "value": 10 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+          "id": 103,
+          "title": "Individual Stock — $ticker",
+          "type": "row"
+        },
+        {
+          "id": 30,
+          "type": "stat",
+          "title": "$ticker — ROIC (TTM)",
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(roic_ttm, 1) AS \"ROIC %\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent", "decimals": 1,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 10 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 31,
+          "type": "stat",
+          "title": "$ticker — EPS CAGR",
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(eps_cagr_full * 100, 1) AS \"EPS CAGR %\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent", "decimals": 1,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 10 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 32,
+          "type": "stat",
+          "title": "$ticker — D/E",
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(debt_to_equity, 1) AS \"D/E\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 1,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 100 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 33,
+          "type": "stat",
+          "title": "$ticker — Current Ratio",
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(current_ratio, 2) AS \"CR\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 2,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 1 }, { "color": "green", "value": 1.5 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 34,
+          "type": "stat",
+          "title": "$ticker — Quick Ratio",
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(quick_ratio, 2) AS \"QR\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 2,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.8 }, { "color": "green", "value": 1 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 35,
+          "type": "stat",
+          "title": "$ticker — PE (TTM)",
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 34 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT ROUND(pe_ttm, 1) AS \"PE\" FROM rule1_summary WHERE ticker = '$ticker' AND calc_date = (SELECT MAX(calc_date) FROM rule1_summary WHERE ticker = '$ticker')",
+            "refId": "A"
+          }],
+          "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 1,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 20 }, { "color": "red", "value": 30 }] },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 40,
+          "type": "table",
+          "title": "$ticker — Annual Metrics",
+          "description": "Year-by-year fundamental data with YoY growth rates",
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 38 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT fiscal_year AS \"Year\", ROUND(roic_pct, 1) AS \"ROIC %\", ROUND(book_value_per_share, 2) AS \"BVPS\", ROUND(bvps_yoy * 100, 1) AS \"BVPS YoY %\", ROUND(earnings_per_share, 2) AS \"EPS\", ROUND(eps_yoy * 100, 1) AS \"EPS YoY %\", ROUND(revenue_mil, 0) AS \"Rev (M)\", ROUND(revenue_yoy * 100, 1) AS \"Rev YoY %\", ROUND(fcf_mil, 0) AS \"FCF (M)\", ROUND(fcf_yoy * 100, 1) AS \"FCF YoY %\", ROUND(avg_share_price, 2) AS \"Avg Price\", ROUND(avg_pe, 1) AS \"Avg PE\" FROM rule1_annual WHERE ticker = '$ticker' ORDER BY fiscal_year",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              {
+                "matcher": { "id": "byRegexp", "options": "YoY" },
+                "properties": [{
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "red", "value": null },
+                      { "color": "yellow", "value": 0 },
+                      { "color": "green", "value": 10 }
+                    ]
+                  }
+                }, {
+                  "id": "custom.cellOptions",
+                  "value": { "type": "color-text" }
+                }]
+              }
+            ]
+          }
+        },
+        {
+          "id": 50,
+          "type": "barchart",
+          "title": "$ticker — EPS by Year",
+          "gridPos": { "h": 9, "w": 12, "x": 0, "y": 48 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT fiscal_year::text AS \"Year\", ROUND(earnings_per_share, 2) AS \"EPS\" FROM rule1_annual WHERE ticker = '$ticker' ORDER BY fiscal_year",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "vertical",
+            "showValue": "always",
+            "barWidth": 0.6
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "blue" },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 51,
+          "type": "barchart",
+          "title": "$ticker — Revenue by Year (Mil)",
+          "gridPos": { "h": 9, "w": 12, "x": 12, "y": 48 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT fiscal_year::text AS \"Year\", ROUND(revenue_mil, 0) AS \"Revenue (M)\" FROM rule1_annual WHERE ticker = '$ticker' ORDER BY fiscal_year",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "vertical",
+            "showValue": "always",
+            "barWidth": 0.6
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "green" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 52,
+          "type": "barchart",
+          "title": "$ticker — Free Cash Flow by Year (Mil)",
+          "gridPos": { "h": 9, "w": 12, "x": 0, "y": 57 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT fiscal_year::text AS \"Year\", ROUND(fcf_mil, 0) AS \"FCF (M)\" FROM rule1_annual WHERE ticker = '$ticker' ORDER BY fiscal_year",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "vertical",
+            "showValue": "always",
+            "barWidth": 0.6
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "purple" }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 53,
+          "type": "barchart",
+          "title": "$ticker — Book Value Per Share by Year",
+          "gridPos": { "h": 9, "w": 12, "x": 12, "y": 57 },
+          "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+          "targets": [{
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT fiscal_year::text AS \"Year\", ROUND(book_value_per_share, 2) AS \"BVPS\" FROM rule1_annual WHERE ticker = '$ticker' ORDER BY fiscal_year",
+            "refId": "A"
+          }],
+          "options": {
+            "orientation": "vertical",
+            "showValue": "always",
+            "barWidth": 0.6
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "orange" },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          }
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["rule1", "stock-analyzer", "homelab"],
+      "templating": {
+        "list": [
+          {
+            "current": { "text": "AAPL", "value": "AAPL" },
+            "datasource": { "type": "postgres", "uid": "postgresql-homelab" },
+            "definition": "SELECT DISTINCT ticker FROM rule1_summary ORDER BY ticker",
+            "name": "ticker",
+            "label": "Ticker",
+            "query": "SELECT DISTINCT ticker FROM rule1_summary ORDER BY ticker",
+            "refresh": 1,
+            "type": "query",
+            "sort": 1
+          }
+        ]
+      },
+      "time": { "from": "now-90d", "to": "now" },
+      "timezone": "",
+      "title": "Rule #1 — Phil Town",
+      "uid": "rule1-phil-town",
+      "version": 1
+    }

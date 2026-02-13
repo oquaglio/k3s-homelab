@@ -257,6 +257,95 @@ PostgreSQL (homelab DB, existing cluster service)
 Grafana (add PG datasource, build dashboards)
 ```
 
+## Rule #1 Analyzer (Phil Town)
+
+A second CronJob runs 30 minutes after the main analyzer, calculating Phil Town's Rule #1 investing metrics. These are **per-stock absolute health checks** (vs the composite score which ranks stocks relative to each other).
+
+### What It Calculates
+
+**Annual time-series** (one row per ticker per fiscal year, ~4 years from yfinance):
+
+| Metric | YoY Growth | CAGR Full | CAGR Recent |
+|--------|-----------|-----------|-------------|
+| ROIC % | - | earliest to latest annual | 2nd-to-last to TTM |
+| Book Value Per Share | Y | earliest to latest annual | 2nd-to-last to TTM |
+| Earnings Per Share | Y | earliest to latest annual | 2nd-to-last to TTM |
+| Revenue (Mil) | Y | earliest to latest annual | 2nd-to-last to TTM |
+| Free Cash Flow (Mil) | Y | earliest to latest annual | 2nd-to-last to TTM |
+| Avg Share Price | Y | earliest to latest annual | 2nd-to-last to TTM |
+| Avg PE | Y | earliest to latest annual | 2nd-to-last to TTM |
+
+**Point-in-time snapshot** (current values):
+
+| Metric | Direction |
+|--------|-----------|
+| Return on Assets % | Higher is better |
+| Return on Equity % | Higher is better |
+| Dividends (TTM) | - |
+| Total Liabilities | Lower is better |
+| Debt/Equity | Lower is better |
+| Current Ratio | Higher is better |
+| Quick Ratio | Higher is better |
+
+### Rule #1 Pass Criteria
+
+Phil Town looks for companies where BVPS, EPS, Revenue, and FCF CAGRs are all >= 10% over 10 years. With ~4 years of yfinance data, the analyzer checks the same threshold over the available period and reports which tickers pass.
+
+### Database Tables
+
+- **`rule1_annual`** - One row per ticker per fiscal year. Raw values + YoY growth rates.
+- **`rule1_summary`** - One row per ticker per analysis date. CAGRs, TTM values, and snapshot metrics.
+
+### Trigger a Manual Run
+
+```bash
+kubectl create job rule1-manual \
+  --from=cronjob/stock-analyzer-stock-analyzer-rule1 -n stock-analyzer
+kubectl logs -f job/rule1-manual -n stock-analyzer
+kubectl delete job rule1-manual -n stock-analyzer
+```
+
+### Example Grafana Queries
+
+**Rule #1 summary table:**
+```sql
+SELECT s.ticker, s.years_of_data,
+       ROUND(s.bvps_cagr_full * 100, 1) AS bvps_cagr_pct,
+       ROUND(s.eps_cagr_full * 100, 1) AS eps_cagr_pct,
+       ROUND(s.revenue_cagr_full * 100, 1) AS rev_cagr_pct,
+       ROUND(s.fcf_cagr_full * 100, 1) AS fcf_cagr_pct,
+       ROUND(s.roic_ttm, 1) AS roic_pct,
+       ROUND(s.debt_to_equity, 2) AS de_ratio,
+       ROUND(s.current_ratio, 2) AS cr
+FROM rule1_summary s
+WHERE s.calc_date = CURRENT_DATE
+ORDER BY s.eps_cagr_full DESC NULLS LAST
+```
+
+**Annual EPS trend for a stock:**
+```sql
+SELECT fiscal_year AS time, earnings_per_share,
+       ROUND(eps_yoy * 100, 1) AS yoy_growth_pct
+FROM rule1_annual
+WHERE ticker = 'AAPL'
+ORDER BY fiscal_year
+```
+
+**Tickers passing Rule #1 (all CAGRs >= 10%):**
+```sql
+SELECT ticker, ROUND(bvps_cagr_full * 100, 1) AS bvps,
+       ROUND(eps_cagr_full * 100, 1) AS eps,
+       ROUND(revenue_cagr_full * 100, 1) AS rev,
+       ROUND(fcf_cagr_full * 100, 1) AS fcf
+FROM rule1_summary
+WHERE calc_date = CURRENT_DATE
+  AND bvps_cagr_full >= 0.10
+  AND eps_cagr_full >= 0.10
+  AND revenue_cagr_full >= 0.10
+  AND fcf_cagr_full >= 0.10
+ORDER BY eps_cagr_full DESC
+```
+
 ## How It Works Under the Hood
 
 1. The CronJob creates a pod with a `python:3.12-slim` image

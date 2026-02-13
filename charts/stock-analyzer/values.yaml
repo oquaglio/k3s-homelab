@@ -10,6 +10,9 @@ image:
 # CronJob schedule (default: 10 PM UTC weekdays = after US market close)
 schedule: "0 22 * * 1-5"
 
+# Rule #1 analyzer schedule (30 min after main analyzer to avoid yfinance rate limits)
+rule1Schedule: "30 22 * * 1-5"
+
 # Delay between API calls per ticker (seconds) - be respectful to yfinance
 delaySeconds: "1.5"
 
